@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
@@ -31,4 +32,12 @@ async def log_requests(request: Request, call_next):
     logger.info(f"Request received: {request.method} {request.url}")
     response = await call_next(request)
     logger.info(f"Request processed: {request.method} {request.url}")
+    return response
+
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
     return response

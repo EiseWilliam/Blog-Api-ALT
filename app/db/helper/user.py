@@ -67,5 +67,7 @@ def find_user(email: str) -> dict:
 async def delete_user(user_id: str):
     user = await User.find_one({"_id": ObjectId(user_id)})
     if user:
-        await User.delete_one({"_id": ObjectId(user_id)})
-        return True
+        deleted = await User.delete_one({"_id": ObjectId(user_id)})
+        if deleted:
+            return True
+    return False

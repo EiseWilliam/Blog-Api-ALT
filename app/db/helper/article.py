@@ -9,19 +9,12 @@ from datetime import datetime
 
 
 async def add_article(article_data: CreateArticle) -> str:
-    try:
-        # Insert the user data into the collection
-        result = await Article.insert_one(article_data)
+    # Insert the user data into the collection
+    result = Article.insert_one(article_data)
 
-        # Check if the insertion was successful
-        if result.inserted_id:
-            return result.inserted_id
-        else:
-            return False
-
-    except Exception as e:
-        return str(e)
-
+    # Check if the insertion was successful
+    if result.inserted_id:
+        return result.inserted_id
 
 
 async def update_article(id: str, article_details: UpdateArticle) -> dict:

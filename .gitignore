@@ -5,5 +5,15 @@ alt
 .env
 \env
 __pycache__
-.pyc
 
+
+# ignore all files of .pyc extension
+*.pyc
+
+# ignore all folders named __pycache__ and .vscode
+__pycache__/
+.vscode/
+
+# ignore self
+.gitignore
+```
