@@ -4,8 +4,9 @@ from decouple import config
 from db.database import db
 import uvicorn
 
+from middleware.logger import logger, log_requests
 
-from routers import auth, articles, users, comments
+from routers import auth, articles, user, comments
 
 app = FastAPI()
 
@@ -22,10 +23,15 @@ app.add_middleware(
     
 )
 
+app.middleware("http")(log_requests)
+
+app = FastAPI()
+
 
 app.include_router(auth.router, tags=['Auth'], prefix='/auth')
+app.include_router(user.router, tags=['User'], prefix='/user')
 app.include_router(articles.router, tags=['Article'], prefix='/articles')
-app.include_router(comments.router, tags=['Article'], prefix='/articles/comments')
+app.include_router(comments.router, tags=['Comments'], prefix='/articles')
 
 
 

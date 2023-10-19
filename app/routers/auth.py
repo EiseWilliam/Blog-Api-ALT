@@ -2,24 +2,31 @@ from datetime import datetime, timedelta
 from typing import Annotated
 from bson.objectid import ObjectId
 from decouple import config
-from fastapi import APIRouter, Response, status, Depends, HTTPException, Body
+from fastapi import APIRouter, Response, status, Depends, HTTPException, Body, Form
 from fastapi.security import OAuth2PasswordRequestForm
 
 # from app.auth import oauth2
 from db.database import User
 from db.serializer import user_entity
-from db.helper import add_user, find_user
+from db.helper.user import create_user, find_user
 from schemas.users import CreateUser, UpdateUser
-from utils.oauth import hash_password, verify_password, create_access_token, create_refresh_token, get_current_user
+from utils.oauth import (
+    hash_password,
+    verify_password,
+    create_access_token,
+    create_refresh_token,
+    get_current_user,
+)
 from config.settings import ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN
-
 
 
 router = APIRouter()
 
 
-@router.post('/register', status_code=status.HTTP_201_CREATED)
-async def register(payload: Annotated[CreateUser, Body()], response: Response) -> dict:
+@router.post("/register", status_code=status.HTTP_201_CREATED)
+async def register(
+    payload: Annotated[CreateUser, Body(..., embed=True)], response: Response
+) -> dict:
     """
     Register a new user.
 
@@ -30,49 +37,72 @@ async def register(payload: Annotated[CreateUser, Body()], response: Response) -
         A dictionary containing the status of the operation and the newly created user object.
     """
     # Check if user already exists
-    user = find_user(payload.email.lower())
+    user = find_user(payload.email)
     if user:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='User already registered')
-
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="User already registered"
+        )
     # Compare and confirm password
     if payload.password != payload.confirm_password:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Password does not match')
-
-    # # Hash the password
-    payload.password = hash_password(payload.password)
-    payload.email = payload.email.lower()
-    del payload.confirm_password
-    payload = payload.model_dump()
-    
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Password does not match"
+        )
     # # Insert the new user into the database
-    feedback = add_user(payload)
-    
-    if feedback == False:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='User not Added')
+    feedback = create_user(payload)
 
+    if feedback == False:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="User not Added"
+        )
     # login user
-    access_token = create_access_token(
-        _id=feedback)
-    
-        # Create refresh token
-    refresh_token = create_refresh_token(
-        _id=feedback)
+    access_token = create_access_token(*feedback)
+    # Create refresh token
+    refresh_token = create_refresh_token(*feedback)
 
     # Store refresh and access tokens in cookie
-    response.set_cookie('access_token', access_token, ACCESS_TOKEN_EXPIRES_IN * 60,
-                        ACCESS_TOKEN_EXPIRES_IN * 60, '/', None, False, True, 'lax')
-    response.set_cookie('refresh_token', refresh_token,
-                        REFRESH_TOKEN_EXPIRES_IN * 60, REFRESH_TOKEN_EXPIRES_IN * 60, '/', None, False, True, 'lax')
-    response.set_cookie('logged_in', 'True', ACCESS_TOKEN_EXPIRES_IN * 60,
-                        ACCESS_TOKEN_EXPIRES_IN * 60, '/', None, False, False, 'lax')
+    response.set_cookie(
+        "access_token",
+        access_token,
+        ACCESS_TOKEN_EXPIRES_IN * 60,
+        ACCESS_TOKEN_EXPIRES_IN * 60,
+        "/",
+        None,
+        False,
+        True,
+        "lax",
+    )
+    response.set_cookie(
+        "refresh_token",
+        refresh_token,
+        REFRESH_TOKEN_EXPIRES_IN * 60,
+        REFRESH_TOKEN_EXPIRES_IN * 60,
+        "/",
+        None,
+        False,
+        True,
+        "lax",
+    )
+    response.set_cookie(
+        "logged_in",
+        "True",
+        ACCESS_TOKEN_EXPIRES_IN * 60,
+        ACCESS_TOKEN_EXPIRES_IN * 60,
+        "/",
+        None,
+        False,
+        False,
+        "lax",
+    )
 
     # Send both access
-    return {'status': 'User registered successfully!', 'access_token': access_token}
+    return {"status": "User registered successfully!", "access_token": access_token}
 
 
 # User sign in
-@router.post('/login', status_code=status.HTTP_200_OK)
-async def login(payload: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response) -> dict:
+@router.post("/login", status_code=status.HTTP_200_OK)
+async def login(
+    payload: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response
+) -> dict:
     """_summary_
 
     Args:
@@ -86,31 +116,32 @@ async def login(payload: Annotated[OAuth2PasswordRequestForm, Depends()], respon
     Returns:
         dict: _token_
     """
-    
+
     # check if user exists
-    user = find_user(payload.username.lower())
+    user: dict = find_user(payload.username)
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
-    
-    # check if password is correct
-    if not verify_password(payload.password, user['password']):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Incorrect password')
-    
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+
+    if not verify_password(payload.password, user["password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password"
+        )
+
     # create access token
-    access_token = create_access_token(
-        _id=user["id"])
-
+    access_token = create_access_token(user["id"], user["email"])
     # Create refresh token
-    refresh_token = create_refresh_token(
-        _id=user["id"])
+    refresh_token = create_refresh_token(user["id"], user["email"])
 
-    # Send both access
     return {"access_token": access_token, "token_type": "bearer"}
 
 
 # user logout
-@router.post('/logout', status_code=status.HTTP_200_OK)
-async def logout(response: Response, user: Annotated[str, Depends(get_current_user)]) -> dict:
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(
+    response: Response, user: Annotated[str, Depends(get_current_user)]
+) -> dict:
     """_summary_
 
     Args:
@@ -120,16 +151,8 @@ async def logout(response: Response, user: Annotated[str, Depends(get_current_us
         dict: _description_
     """
     # Clear cookies
-    response.delete_cookie('access_token')
-    response.delete_cookie('refresh_token')
-    response.delete_cookie('logged_in')
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+    response.delete_cookie("logged_in")
 
-    return {'status': 'success', 'message': 'User logged out'}
-
-
-
-   
-
-
-    
-    
+    return {"status": "success", "message": "User logged out"}

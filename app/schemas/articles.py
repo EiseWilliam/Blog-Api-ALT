@@ -1,10 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field 
 from datetime import datetime
-from bson import ObjectId as Objectid
+from models.objectid import CusObjectId
 
-
+class ArticleIn:
+    pass
 class Article(BaseModel):
-    title: str
+    author : str = Field(..., alias="user_id")
+    title: str 
     body: str
     categories: list
 

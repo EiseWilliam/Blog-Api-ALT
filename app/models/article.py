@@ -19,3 +19,6 @@ class CreateArticleInDB(ArticleInDB):
 
 class UpdateArticleInDB(ArticleInDB):
     date_edited: datetime = datetime.now()
+    
+    
+

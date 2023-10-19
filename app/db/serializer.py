@@ -4,15 +4,35 @@ from db.database import User, Article, Comment
 
 
 # Database serializers
+def profile_object(profile) -> dict:
+    return{
+        "first_name": profile.get("first_name"),
+        "last_name": profile.get("last_name"),
+        "bio": profile.get("bio"),
+        "photo": profile.get("photo"),
+    }
+def full_profile_entity(user) -> dict:
+    return {
+        "id": str(user.get("_id")),
+        "username": user.get("username"),
+        "email": user.get("email"),
+        "password": user.get("password"),
+        "profile": profile_object(user.get("profile")),
+        "date_created": user.get("date_created"),
+        "date_updated": user.get("date_updated"),
+
+    }
+
+    
 def user_entity(user) -> dict:
     return {
-        "id": str(user["_id"]),
+        "id": str(user.get("_id")),
         "username": user.get("username"),
-        "email": user["email"],
-        "password": user["password"],
+        "email": user.get("email"),
+        "password": user.get("password"),
         "profile": user.get("profile"),
-        "created_at": user["created_at"],
-        "updated_at": user["updated_at"],
+        "date_created": user.get("date_created"),
+        "date_updated": user.get("date_updated"),
     }
 
 
@@ -23,13 +43,13 @@ async def user_list_entity() -> Generator:
 
 def article_entity(article) -> dict:
     return {
-        "id": str(article["_id"]),
-        "author": article["user_id"],
-        "title": article["title"],
-        "body": article["body"],
-        "categories": article["categories"],
-        "date_published": article["created_at"],
-        "date_updated": article["updated_at"],
+        "id": str(article.get("_id")),
+        "author": article.get("user_id"),
+        "title": article.get("title"),
+        "body": article.get("body"),
+        "categories": article.get("categories"),
+        "date_published": article.get("created_at"),
+        "date_updated": article.get("updated_at"),
     }
 
 
@@ -55,12 +75,12 @@ async def article_list_by_author(user_id) -> Generator:
 
 def comment_entity(comment) -> dict:
     return {
-        "id": str(comment["_id"]),
-        "article": comment["article_id"],
-        "author": comment["user_id"],
-        "content": comment["content"],
-        "date_posted": comment["created_at"],
-        "date_updated": comment["updated_at"],
+        "id": str(comment.get("_id")),
+        "article": comment.get("article_id"),
+        "author": comment.get("user_id"),
+        "content": comment.get("content"),
+        "date_posted": comment.get("created_at"),
+        "date_updated": comment.get("updated_at"),
     }
 
             

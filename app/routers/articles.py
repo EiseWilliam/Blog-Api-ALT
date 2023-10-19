@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Body, HTTPException, status
 from typing import Annotated
 from schemas.articles import CreateArticle, UpdateArticle, ArticleList
-from db.helper import add_article, retrieve_article, update_article, delete_article
+from db.helper.article import add_article, retrieve_article, update_article, delete_article
 from db.serializer import article_list_entity, article_list_by_author
 from models.objectid import CusObjectId
 from utils.oauth import get_current_user, check_update_right
@@ -43,8 +43,8 @@ async def create_article(
     article: CreateArticle, user_id: Annotated[str, Depends(get_current_user)]
 ) -> dict:
     article_data = article.model_dump()
-    article_data["user_id"] = user_id
-    article_id = await add_article(article_data)
+    article_data["author"] = user_id
+    article_id = add_article(article_data)
     if article_id:
         return {"id": article_id}
     else:
