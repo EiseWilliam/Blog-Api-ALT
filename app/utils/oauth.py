@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from models.objectid import CusObjectId
 from db.helper.article import retrieve_article
+from schemas.response.user import CurrentUser
 
 from config.settings import JWT_SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES
 
@@ -44,7 +45,7 @@ def create_refresh_token(_id: str, email: str, expires_delta: int | None = None)
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm=ALGORITHM);
 
 
-def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict:
+def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> CurrentUser:
     try:
         user = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
         if user is None:

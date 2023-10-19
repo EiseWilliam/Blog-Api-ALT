@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, Body, HTTPException, status
 from typing import Annotated
 from schemas.articles import CreateArticle, UpdateArticle, ArticleList
 from db.helper.article import add_article, retrieve_article, update_article, delete_article
-from db.serializer import article_list_entity, article_list_by_author
+from db.serializer import article_list_entity
+from db.helper.article import article_list_by_author
 from models.objectid import CusObjectId
 from utils.oauth import get_current_user, check_update_right
 

@@ -1,17 +1,21 @@
 from typing import Generator
 from bson.objectid import ObjectId
 from db.database import User, Article, Comment
+from schemas.users import Profile
+from schemas.response.user import UserProfileResponse
 
 
 # Database serializers
-def profile_object(profile) -> dict:
+def profile_object(profile) -> Profile:
     return{
         "first_name": profile.get("first_name"),
         "last_name": profile.get("last_name"),
         "bio": profile.get("bio"),
+        "contact": profile.get("contact"),
         "photo": profile.get("photo"),
     }
-def full_profile_entity(user) -> dict:
+    
+def full_profile_entity(user) -> UserProfileResponse:
     return {
         "id": str(user.get("_id")),
         "username": user.get("username"),
@@ -53,25 +57,10 @@ def article_entity(article) -> dict:
     }
 
 
-async def article_list_entity() -> Generator:
-    """Generates n list of articles
-    :param n: Number of articles to generate
-    :type n: int
-    
-    """
-    for article_obj in Article.find():
-        yield article_entity(article_obj)
-        
-            
-async def article_list_by_author(user_id) -> Generator:
-    """Generates list of articles by author
-    
-    """
-    for article_obj in Article.find({"user_id": user_id}):
-        yield article_entity(article_obj)
+async def article_list_entity(articles) -> list[dict]:
+    return list(article_entity(article) for article in articles)
 
-
-
+                   
 
 def comment_entity(comment) -> dict:
     return {

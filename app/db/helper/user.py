@@ -29,10 +29,11 @@ def create_user(user_data: CreateUserInDB) -> list[str]:
 
 
 # update user
-def update_user(id: str, user_details: UpdateUserInDB) -> dict:
+def update_user(id: str, user_details) -> str | bool:
     user = User.find_one({"_id": ObjectId(id)})
     if user:
         user_data = user_details.model_dump(exclude_unset=True)
+        user_data["date_updated"] = datetime.now()
         result = User.update_one({"_id": ObjectId(id)}, {"$set": user_data})
         return result.upserted_id
     else:
@@ -40,10 +41,14 @@ def update_user(id: str, user_details: UpdateUserInDB) -> dict:
 
 
 # retreive user
-async def retrieve_user(user_id: str) -> dict:
-    user = User.find_one({"_id": ObjectId(user_id)})
+def retreive_user(id: str) -> dict:
+    user = User.find_one({"_id": ObjectId(id)})
     if user:
-        return user_entity(user)
+        # Serialize the user document into a dictionary
+        serialized_user = user_entity(user)
+        return serialized_user
+    else:
+        return None
 
 
 # find user by email

@@ -1,5 +1,5 @@
 from db.database import User, Article, Comment
-from db.serializer import user_entity, article_entity, comment_entity
+from db.serializer import user_entity, article_entity, article_list_entity, comment_entity
 from schemas.articles import CreateArticle, UpdateArticle
 
 
@@ -38,6 +38,15 @@ async def retrieve_article(article_id: str) -> dict:
     article = await Article.find_one({"_id": ObjectId(article_id)})
     if article:
         return article_entity(article)
+
+
+
+async def article_list_by_author(user_id) -> list:
+    """Returns list of articles by author
+    
+    """
+    articles = (article for article in Article.find({"user_id": user_id}))
+    return article_list_entity(articles)
 
 
 async def delete_article(article_id: str):

@@ -1,19 +1,19 @@
 from pydantic import BaseModel, EmailStr
+from typing import Optional
 from datetime import datetime
 
 
-class Profile(BaseModel):
-    first_name: str | None = None
-    last_name: str | None = None
-    bio: str
-    photo: str | None = None
+from schemas.users import Profile
     
     
 class UserProfileResponse(BaseModel):
-    _id: str
+    id: str
     username: str | None = None
     email: EmailStr
-    password: str
-    profile: Profile = Profile(bio="This user hasn't set up their profile yet.")
+    profile: Profile|dict|None = {}
     date_created: datetime
     date_updated: datetime
+    
+class CurrentUser(BaseModel):
+    id: str
+    email: EmailStr
