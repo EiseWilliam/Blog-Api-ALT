@@ -43,4 +43,34 @@ async def create_comment(article_id: str, comment: CreateComment, user_id: Annot
             detail="failed to post your comment",
         )
     
+
+
+
+
+
+
+class like(BaseModel):
+    item_id: str
+    user_id: str
     
+ router = APIRouter()
+    
+@router.post("{article}/", status_code = HTTP.201_CREATED)
+aysnc def like_article(article, user = Annotated[dict, depends(get_current_user)]):
+    feedback = like_an_item(article, user)
+    if feedback == False:
+        raise HTTPException()
+    return {"message":"liked Article sucessfully}
+    
+    
+@router.post("{comment}/", status_code = HTTP.201_CREATED)
+aysnc def like_article(article, user = Annotated[dict, depends(get_current_user)]):
+    feedback = like_an_item(comment, user)
+    if feedback == False:
+        raise HTTPException()
+    return {"message":"liked comment sucessfully}
+    
+    
+ aysnc def like_an_item(item: str, user: str, collection):
+     collection.insertOne(data)
+ 
