@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Body, HTTPException, status
 from typing import Annotated
 from schemas.articles import CreateArticle, UpdateArticle, ArticleList
-from db.helper.article import add_article, retrieve_article, update_article, delete_article
+from db.helper.article import create_article, retrieve_article, update_article, delete_article
 from db.serializer import article_list_entity
 from db.helper.article import article_list_by_author
 from models.objectid import CusObjectId
@@ -40,19 +40,18 @@ async def get_articles_by_author(user_id: str) -> list:
 
 
 @router.post("/articles", status_code=status.HTTP_201_CREATED)
-async def create_article(
+async def Publish_article(
     article: CreateArticle, user_id: Annotated[str, Depends(get_current_user)]
 ) -> dict:
-    article_data = article.model_dump()
-    article_data["author"] = user_id
-    article_id = add_article(article_data)
-    if article_id:
-        return {"id": article_id}
-    else:
+    return_id = await create_article(article,user_id)
+    if return_id == False:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Article creation failed",
         )
+    else:
+        return {"id": return_id,
+                "message": "Article published successfully"}
 
 
 @router.put("/articles", status_code=status.HTTP_200_OK)

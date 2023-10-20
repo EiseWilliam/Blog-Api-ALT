@@ -9,9 +9,11 @@ from fastapi.responses import JSONResponse
 # from app.auth import oauth2
 from db.database import User
 from db.helper.article import article_list_by_author
+from db.helper.article import create_article
 from db.helper.user import create_user, find_user,update_user, retreive_user, delete_user
 from schemas.response.user import UserProfileResponse,CurrentUser
 from schemas.users import UpdateUser
+from schemas.articles import CreateArticle
 from utils.oauth import (
     hash_password,
     verify_password,
@@ -55,6 +57,19 @@ async def my_articles(user: CurrentUser = Depends(get_current_user)) -> list[dic
     articles = article_list_by_author(user['id'])
     return articles
 
+@router.post("/article", status_code=status.HTTP_201_CREATED)
+async def Publish_new_article(
+    article: CreateArticle, user_id: Annotated[str, Depends(get_current_user)]
+) -> dict:
+    return_id = await create_article(article,user_id)
+    if return_id == False:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Article creation failed",
+        )
+    else:
+        return {"id": return_id,
+                "message": "Article published successfully"}
 
 # delete my account
 @router.delete("/", status_code=status.HTTP_200_OK)
