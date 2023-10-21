@@ -13,12 +13,6 @@ class ArticleInDB(BaseModel):
     date_edited: datetime
     
     
-class CreateArticleInDB(ArticleInDB):
-    date_published: datetime = datetime.now()
 
-
-class UpdateArticleInDB(ArticleInDB):
-    date_edited: datetime = datetime.now()
-    
     
 

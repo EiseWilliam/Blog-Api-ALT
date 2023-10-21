@@ -34,7 +34,10 @@ def update_user(id: str, user_details) -> str | bool:
     if user:
         user_data = user_details.model_dump(exclude_unset=True)
         user_data["date_updated"] = datetime.now()
-        result = User.update_one({"_id": ObjectId(id)}, {"$set": user_data})
+        try:
+            result = User.update_one({"_id": ObjectId(id)}, {"$set": user_data})
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f" {str(e)}")
         return result.upserted_id
     else:
         return False

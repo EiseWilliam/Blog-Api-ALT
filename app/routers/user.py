@@ -54,17 +54,17 @@ async def my_articles(user: CurrentUser = Depends(get_current_user)) -> list[dic
     """
     Get the articles of the currently logged in user.
     """
-    articles = article_list_by_author(user['id'])
+    articles = await article_list_by_author(user['id'])
     return articles
 
 @router.post("/article", status_code=status.HTTP_201_CREATED)
 async def Publish_new_article(
-    article: CreateArticle, user_id: Annotated[str, Depends(get_current_user)]
+    article: CreateArticle, user: Annotated[str, Depends(get_current_user)]
 ) -> dict:
-    return_id = await create_article(article,user_id)
+    return_id = await create_article(article,user)
     if return_id == False:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Article creation failed",
         )
     else:

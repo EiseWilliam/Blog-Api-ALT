@@ -6,7 +6,7 @@ import uvicorn
 
 from middleware.logger import logger, log_requests
 
-from routers import auth, articles, user, comments
+from routers import auth, articles, user, comments, blog
 
 app = FastAPI()
 
@@ -30,6 +30,7 @@ app = FastAPI()
 
 app.include_router(auth.router, tags=['Auth'], prefix='/auth')
 app.include_router(user.router, tags=['User'], prefix='/user')
+app.include_router(blog.router, tags=['Blog'], prefix='/blog')
 app.include_router(articles.router, tags=['Article'], prefix='/articles')
 app.include_router(comments.router, tags=['Comments'], prefix='/articles')
 

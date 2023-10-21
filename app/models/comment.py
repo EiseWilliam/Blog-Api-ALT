@@ -1,11 +1,11 @@
 from pydantic import BaseModel
-from objectid import CusObjectId
-
+from bson import ObjectId
+from datetime import datetime
 
 class Comment(BaseModel):
-    _id: CusObjectId 
-    article_id: CusObjectId
-    user_id: CusObjectId
+    _id: ObjectId 
+    slug: str
+    user_id: str
     content: str
-    date_posted: str
-    date_edited: str
+    date_posted: datetime
+    date_edited: datetime

@@ -5,11 +5,9 @@ class Comment(BaseModel):
     article_id: str
     user_id: str
     content: str
-    date_posted: str
-    date_edited: str
     
 class CreateComment(Comment):
-    pass
+    content: str
 
-class UpdateComment(Comment):
-    pass
+class UpdateComment(BaseModel):
+    content: str

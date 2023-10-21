@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Body, HTTPException, status
 from typing import Annotated
-from schemas.articles import CreateArticle, UpdateArticle, ArticleList
-from db.helper.article import create_article, retrieve_article, update_article, delete_article
+from schemas.articles import CreateArticle, UpdateArticle
+from db.helper.article import create_article, retrieve_article, update_article,get_n_articles, delete_article, retrieve_article_by_slug
 from db.serializer import article_list_entity
 from db.helper.article import article_list_by_author
 from models.objectid import CusObjectId
@@ -11,18 +11,15 @@ from utils.oauth import get_current_user, check_update_right
 router = APIRouter()
 
 
-@router.get("/articles", status_code=status.HTTP_200_OK, response_model=ArticleList)
-async def get_articles(n: int = 5) -> dict:
-    articles = []
-    while len(articles) < n:
-        async for article in article_list_entity():
-            articles.append(article)
-    return {"articles": articles}
+@router.get("/", status_code=status.HTTP_200_OK)
+async def get_articles(n: int = 10) -> list[dict]:
+    list = await get_n_articles(n)
+    return  list
 
 
-@router.get("/articles/{article_id}", status_code=status.HTTP_200_OK)
-async def get_article(article_id: str) -> dict:
-    article = retrieve_article(article_id)
+@router.get("/", status_code=status.HTTP_200_OK)
+async def get_article_by_id(article_id: str) -> dict:
+    article = await retrieve_article(article_id)
     if article:
         return article
     else:
@@ -31,15 +28,13 @@ async def get_article(article_id: str) -> dict:
         )
 
 
-@router.get("/articles/author/{user_id}", status_code=status.HTTP_200_OK)
+@router.get("/{user_id}/articles", status_code=status.HTTP_200_OK)
 async def get_articles_by_author(user_id: str) -> list:
-    articles = []
-    async for article in article_list_by_author(user_id):
-        articles.append(article)
+    articles = await article_list_by_author(user_id)
     return articles
 
 
-@router.post("/articles", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def Publish_article(
     article: CreateArticle, user_id: Annotated[str, Depends(get_current_user)]
 ) -> dict:
@@ -54,17 +49,31 @@ async def Publish_article(
                 "message": "Article published successfully"}
 
 
-@router.put("/articles", status_code=status.HTTP_200_OK)
+@router.put("/", status_code=status.HTTP_200_OK)
 async def edit_article(
     article_id: str,
     article: Annotated[UpdateArticle, Body(...)],
-    can_edit: bool = Depends(check_update_right),
+    user: bool = Depends(get_current_user),
 ) -> dict:
-    if can_edit:
-        article_data = article.model_dump()
-        result = await update_article(article_id, article_data)
+    """
+    Edit an article with the given article_id and update it with the provided article data.
+
+    Args:
+        article_id (str): The ID of the article to be updated.
+        article (UpdateArticle): The updated article data.
+        user (bool): The current user making the request.
+
+    Returns:
+        dict: A dictionary containing the ID of the updated article and a success message.
+
+    Raises:
+        HTTPException: If the user is not authorized to update the article or if the update fails.
+    """
+    if check_update_right(article_id, user['id']):
+        result = await update_article(article_id, article)
         if result:
-            return {"id": result}
+            return {"id": result,
+                    "message": "Article updated successfully"}
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -74,4 +83,62 @@ async def edit_article(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Only the Author can edit this article",
+        )
+
+
+
+
+
+
+
+# 
+# Path Operations
+@router.put("/{slug}", status_code=status.HTTP_200_OK)
+async def edit_article_use_path(
+    slug: str,
+    article: Annotated[UpdateArticle, Body(...)],
+    user: bool = Depends(get_current_user),
+) -> dict:
+    if check_update_right(slug, user['id']):
+        result = await update_article(slug, article)
+        if result:
+            return {"id": result,
+                    "message": "Article updated successfully"}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Article update failed",
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Only the Author can edit this article",
+        )
+
+
+@router.get("/{slug}", status_code=status.HTTP_200_OK)
+async def get_article_use_path(slug: str) -> dict:
+    article = await retrieve_article_by_slug(slug)
+    if article:
+        return article
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Article not found"
+        )
+        
+@router.delete("/{slug}", status_code=status.HTTP_200_OK)
+async def delete_article_use_path(slug: str, user: dict = Depends(get_current_user)) -> dict:
+    if check_update_right(slug, user['id']):
+        result = await delete_article(slug)
+        if result:
+            return {"message": "Article deleted successfully"}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Article delete failed",
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Only the Author can delete this article",
         )

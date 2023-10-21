@@ -48,17 +48,19 @@ async def user_list_entity() -> Generator:
 def article_entity(article) -> dict:
     return {
         "id": str(article.get("_id")),
-        "author": article.get("user_id"),
         "title": article.get("title"),
+        "slug": article.get("slug"),
         "body": article.get("body"),
+        "author": article.get("author"),
         "categories": article.get("categories"),
-        "date_published": article.get("created_at"),
-        "date_updated": article.get("updated_at"),
+        "date_published": article.get("date_created"),
+        "date_updated": article.get("date_updated"),
     }
 
 
-async def article_list_entity(articles) -> list[dict]:
-    return list(article_entity(article) for article in articles)
+async def article_list_entity(article_list) -> list:
+    list_ = [article_entity(article) for article in article_list]
+    return list_
 
                    
 
