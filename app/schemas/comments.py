@@ -6,7 +6,7 @@ class Comment(BaseModel):
     user_id: str
     content: str
     
-class CreateComment(Comment):
+class CreateComment(BaseModel):
     content: str
 
 class UpdateComment(BaseModel):

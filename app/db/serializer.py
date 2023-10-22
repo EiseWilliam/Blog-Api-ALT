@@ -1,12 +1,11 @@
 from typing import Generator
-from bson.objectid import ObjectId
 from db.database import User, Article, Comment
 from schemas.users import Profile
 from schemas.response.user import UserProfileResponse
-
+from pymongo import ReturnDocument
 
 # Database serializers
-def profile_object(profile) -> Profile:
+def profile_object(profile) -> Profile | dict:
     return{
         "first_name": profile.get("first_name"),
         "last_name": profile.get("last_name"),
@@ -15,7 +14,8 @@ def profile_object(profile) -> Profile:
         "photo": profile.get("photo"),
     }
     
-def full_profile_entity(user) -> UserProfileResponse:
+
+def full_profile_entity(user) -> UserProfileResponse | dict:
     return {
         "id": str(user.get("_id")),
         "username": user.get("username"),
@@ -24,7 +24,6 @@ def full_profile_entity(user) -> UserProfileResponse:
         "profile": profile_object(user.get("profile")),
         "date_created": user.get("date_created"),
         "date_updated": user.get("date_updated"),
-
     }
 
     
@@ -40,12 +39,13 @@ def user_entity(user) -> dict:
     }
 
 
-async def user_list_entity() -> Generator:
-    async for user in User.find():
-        yield user_entity(user)
+async def user_list_entity(users) -> list[dict]:
+    users_list = [article_entity(user) for user in users]
+    return users_list
 
 
-def article_entity(article) -> dict:
+
+def article_entity(article: dict) -> dict:
     return {
         "id": str(article.get("_id")),
         "title": article.get("title"),
@@ -58,7 +58,7 @@ def article_entity(article) -> dict:
     }
 
 
-async def article_list_entity(article_list) -> list:
+async def article_list_entity(article_list) -> list[dict]:
     list_ = [article_entity(article) for article in article_list]
     return list_
 

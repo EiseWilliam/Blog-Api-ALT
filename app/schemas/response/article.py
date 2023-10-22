@@ -7,7 +7,7 @@ class ArticleResponse(BaseModel):
     title: str = Field(..., min_length=5, max_length=100)
     slug: str = Field(..., min_length=5, max_length=100)
     body: str = Body(..., max_length=10000)
-    categories: list = Field(..., min_items=1, max_items=5)
+    categories: list = Field(...)
     author: str | dict
     date_published: str | datetime
     date_updated: str | datetime

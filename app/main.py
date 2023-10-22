@@ -1,10 +1,11 @@
+import asyncio
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from decouple import config
 from db.database import db
 import uvicorn
+from middleware.logger import CustomAPIRoute
 
-from middleware.logger import logger, log_requests
 
 from routers import auth, articles, user, comments, blog
 
@@ -14,6 +15,11 @@ origins = [
    config('CLIENT_ORIGIN'),
 ]
 
+
+
+        # Add the middleware to the app
+app.router.route_class = CustomAPIRoute
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,10 +28,6 @@ app.add_middleware(
     allow_headers=["*"],
     
 )
-
-app.middleware("http")(log_requests)
-
-app = FastAPI()
 
 
 app.include_router(auth.router, tags=['Auth'], prefix='/auth')
@@ -54,7 +56,8 @@ async def test_mongodb_connection():
         raise HTTPException(status_code=500, detail=f"MongoDB connection failed: {str(e)}")
     
 
-# start uvicorn server
-if __name__ == "__main__":
+async def run_app():
     uvicorn.run(app = "main:app", port=8000, reload=True)
 
+if __name__ == "__main__":
+    asyncio.run(run_app())

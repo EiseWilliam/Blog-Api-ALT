@@ -9,7 +9,7 @@ from bson import ObjectId
 from datetime import datetime
 
 # add a created timestamp
-def create_user(user_data: CreateUserInDB) -> list[str]:
+def create_user(user_data: CreateUserInDB) -> tuple|bool:
  
     # Insert the user data into the collection
     user_data.password = hash_password(user_data.password)
@@ -44,7 +44,7 @@ def update_user(id: str, user_details) -> str | bool:
 
 
 # retreive user
-def retreive_user(id: str) -> dict:
+def retreive_user(id: str) -> dict | None:
     user = User.find_one({"_id": ObjectId(id)})
     if user:
         # Serialize the user document into a dictionary
@@ -55,7 +55,7 @@ def retreive_user(id: str) -> dict:
 
 
 # find user by email
-def find_user(email: str) -> dict:
+def find_user(email: str) -> dict | None:
     user = User.find_one({"email": email.lower()})
     if user:
         # Serialize the user document into a dictionary
@@ -68,9 +68,9 @@ def find_user(email: str) -> dict:
 
 # delete user from db
 async def delete_user(user_id: str):
-    user = await User.find_one({"_id": ObjectId(user_id)})
+    user =  User.find_one({"_id": ObjectId(user_id)})
     if user:
-        deleted = await User.delete_one({"_id": ObjectId(user_id)})
+        deleted = User.delete_one({"_id": ObjectId(user_id)})
         if deleted:
             return True
     return False

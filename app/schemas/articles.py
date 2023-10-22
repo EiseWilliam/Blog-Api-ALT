@@ -20,19 +20,25 @@ class Category(str, Enum):
 class Article(BaseModel):
     title: str = Field(..., min_length=5, max_length=100)
     body: str = Body(..., max_length=10000)
-    categories: list = Field(..., min_items=1, max_items=5)
+    categories: list[Category] = Field(...)
     
     class Config:
         json_schema_extra = {
             "example": {
                 "title": "Article title",
                 "body": "Article body",
-                "categories": ["technology", "science", "politics" "entertainment", "sports"],
+                "categories": ["technology", "science", "politics", "entertainment", "sports"],
             }
         }
 
-class CreateArticle(Article):
-    pass
+
+
+
+
+class CreateArticle(BaseModel):
+    title: Optional[str] = Field(None, min_length=5, max_length=100)
+    body: Optional[str] = Body(None, max_length=10000)
+    categories: Optional[list[Category]] = Field(None)
 
 class UpdateArticle(Article):
     pass

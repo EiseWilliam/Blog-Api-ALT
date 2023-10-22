@@ -60,32 +60,23 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> CurrentUs
     return user
 
 
+
 async def check_update_right(id: str, user_id: str, is_comment: bool = False):
     if is_comment:
-        article = retrieve_comment(id)
+        item = await retrieve_comment(id)
     else:
-        article = retrieve_article_by_slug(id) or retrieve_article(id)
-    if not article:
+        item = await retrieve_article_by_slug(id) or await retrieve_article(id)
+
+    if not item:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Article not found"
-        )
-    elif article["author"] == user_id:
-        return article
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail=f"You are not authorized to update this {'comment' if is_comment else 'article'}"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"{'Comment' if is_comment else 'Article'} not found"
         )
 
+    if item["author"] != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"You are not authorized to update this {'comment' if is_comment else 'article'}"
+        )
 
-async def check_comment_update_right(comment_id: str, user_id: str = Depends(get_current_user)):
-    comment = retrieve_comment(comment_id)
-    if not comment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found"
-        )
-    elif comment["author"] == user_id:
-        return True
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to update this comment"
-        )
+    return item
