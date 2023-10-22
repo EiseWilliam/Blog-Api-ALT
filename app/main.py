@@ -32,7 +32,7 @@ app.add_middleware(
 
 app.include_router(auth.router, tags=['Auth'], prefix='/auth')
 app.include_router(user.router, tags=['User'], prefix='/user')
-app.include_router(blog.router, tags=['Blog'], prefix='/blog')
+# app.include_router(blog.router, tags=['Blog'], prefix='/blog')
 app.include_router(articles.router, tags=['Article'], prefix='/articles')
 app.include_router(comments.router, tags=['Comments'], prefix='/articles')
 

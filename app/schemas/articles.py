@@ -40,7 +40,8 @@ class CreateArticle(BaseModel):
     body: Optional[str] = Body(None, max_length=10000)
     categories: Optional[list[Category]] = Field(None)
 
-class UpdateArticle(Article):
-    pass
-      
+class UpdateArticle(BaseModel):
+    title: Optional[str] = Field(None, min_length=5, max_length=100)
+    body: Optional[str] = Body(None, max_length=10000)
+    categories: Optional[list[Category]] = Field(None)
 

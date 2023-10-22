@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, Body, HTTPException, status
 from typing import Annotated
 from schemas.comments import CreateComment, UpdateComment
 from models.objectid import CusObjectId
-from db.helper.comment import add_comment, retrieve_comment, update_comment, delete_comment
-from db.serializer import comment_entity, comment_list_by_article
+from db.helper.comment import add_comment, retrieve_comment, update_comment, delete_comment, comment_list_on_article
+from db.serializer import comment_entity, comment_list_entity
 from utils.oauth import get_current_user
 from db.helper.article import retrieve_article_by_slug, check_if_slug_exists
 
@@ -14,16 +14,15 @@ router = APIRouter()
 # get all comments on an article
 @router.get("/{slug}", status_code=status.HTTP_200_OK)
 async def get_comments(slug: str) -> list:
-    comments = []
-    async for comment in comment_list_by_article(slug):
-        comments.append(comment)
+    comments = await comment_list_on_article(slug)
+    
     return comments
 
 
  
 # comment on an article
 @router.post("/{slug}", status_code=status.HTTP_201_CREATED)
-async def post_comment_path(slug: str, comment: str, user: Annotated[dict, Depends(get_current_user)]) -> dict:
+async def post_comment_path(slug: str, comment: str, user: Annotated[dict[str,str], Depends(get_current_user)]) -> dict:
     article = check_if_slug_exists(slug)
     if article:
         comment_id = await add_comment(comment, slug, user["id"])

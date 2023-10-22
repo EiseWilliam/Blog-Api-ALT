@@ -1,6 +1,6 @@
 
 from db.database import User, Article, Comment
-from db.serializer import user_entity, article_entity, comment_entity
+from db.serializer import user_entity, article_entity, comment_entity, comment_list_entity
 from schemas.comments import CreateComment, UpdateComment
 
 
@@ -24,7 +24,7 @@ async def add_comment(comment: str, user_id: str, slug: str) -> str:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"failure to create comment,DB error; {str(e)}",
         )
-    return result.inserted_id
+    return str(result.inserted_id)
 
 
 async def update_comment(id: str, comment_details: UpdateComment) -> str | bool:
@@ -37,7 +37,7 @@ async def update_comment(id: str, comment_details: UpdateComment) -> str | bool:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"failure to update comment,DB error; {str(e)}",
         )
-    return result.upserted_id
+    return str(result.upserted_id)
 
 async def retrieve_comment(comment_id: str) -> dict:
     comment = Comment.find_one({"_id": ObjectId(comment_id)})
@@ -57,3 +57,9 @@ async def delete_comment(comment_id: str) -> bool:
             )
         else:
             return True
+
+# retreive comments on article
+async def comment_list_on_article(slug_id: str) -> list:
+    comments = list(comment for comment in Comment.find({"article": slug_id}))
+    list_ = await comment_list_entity(comments)
+    return list_

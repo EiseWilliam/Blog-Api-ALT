@@ -77,9 +77,6 @@ def comment_entity(comment) -> dict:
             
             
 
-async def comment_list_by_article(article_id) -> Generator:
-    """Generates list of comment on an article
-    
-    """
-    async for comment_obj in Comment.find({"article": article_id}):
-        yield article_entity(comment_obj)
+async def comment_list_entity(comment_list) -> list[dict]:
+    list_ = [comment_entity(comment) for comment in comment_list]
+    return list_
