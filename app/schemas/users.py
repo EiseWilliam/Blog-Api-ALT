@@ -7,6 +7,7 @@ class User(BaseModel):
 
 
 class CreateUser(User):
+    username: str
     password: str
     confirm_password: str
 

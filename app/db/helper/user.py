@@ -1,15 +1,16 @@
 from db.database import User, Article, Comment
 from db.serializer import user_entity, article_entity, comment_entity
 from schemas.comments import CreateComment, UpdateComment
+from schemas.users import CreateUser, UpdateUser
 from utils.oauth import hash_password
-from models.user import CreateUserInDB, UpdateUserInDB
+
 
 from fastapi import HTTPException
 from bson import ObjectId
 from datetime import datetime
 
 # add a created timestamp
-def create_user(user_data: CreateUserInDB) -> tuple|bool:
+def create_user(user_data: CreateUser) -> tuple|bool:
  
     # Insert the user data into the collection
     user_data.password = hash_password(user_data.password)

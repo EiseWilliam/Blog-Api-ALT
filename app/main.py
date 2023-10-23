@@ -5,7 +5,7 @@ from decouple import config
 from db.database import db
 import uvicorn
 from middleware.logger import CustomAPIRoute
-
+from db.database import connect_to_db, close_db_connection
 
 from routers import auth, articles, user, comments, blog
 
@@ -28,6 +28,9 @@ app.add_middleware(
     allow_headers=["*"],
     
 )
+
+app.add_event_handler("startup", connect_to_db)
+app.add_event_handler("shutdown", close_db_connection)
 
 
 app.include_router(auth.router, tags=['Auth'], prefix='/auth')
