@@ -67,11 +67,11 @@ async def article_list_entity(article_list) -> list[dict]:
 def comment_entity(comment) -> dict:
     return {
         "id": str(comment.get("_id")),
-        "article": comment.get("article_id"),
-        "author": comment.get("user_id"),
+        "article": comment.get("article"),
+        "author": comment.get("author"),
         "content": comment.get("content"),
-        "date_posted": comment.get("created_at"),
-        "date_updated": comment.get("updated_at"),
+        "date_posted": comment.get("date_posted"),
+        "date_updated": comment.get("date_updated"),
     }
 
             

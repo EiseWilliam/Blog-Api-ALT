@@ -14,12 +14,11 @@ class CreateUser(User):
 
 
 class Profile(BaseModel):
-    first_name: str | None = None
-    last_name: str | None = None
-    bio: str | None = None
-    contact: str | None = None
-    photo: str | None = None
-
+    first_name: str | None = ""
+    last_name: str | None = ""
+    bio: str | None = ""
+    contact: str | None = ""
+    photo: str | None = ""
 
 class UpdateUser(BaseModel):
     username: str | None = None
