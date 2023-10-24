@@ -38,4 +38,6 @@ class CustomAPIRoute(APIRoute):
             logger.info(f"route response headers: {response.headers}")
             return response
 
-        return custom_route_handler()
+        return custom_route_handler
+    
+

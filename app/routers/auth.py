@@ -118,7 +118,7 @@ async def login(
     """
 
     # check if user exists
-    user: dict = find_user(payload.username)
+    user: dict = find_user(payload.username) # type: ignore
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
@@ -134,6 +134,40 @@ async def login(
     # Create refresh token
     refresh_token = create_refresh_token(user["id"], user["email"])
 
+    response.set_cookie(
+        "access_token",
+        access_token,
+        ACCESS_TOKEN_EXPIRES_IN * 60,
+        ACCESS_TOKEN_EXPIRES_IN * 60,
+        "/",
+        None,
+        False,
+        True,
+        "lax",
+    )
+    response.set_cookie(
+        "refresh_token",
+        refresh_token,
+        REFRESH_TOKEN_EXPIRES_IN * 60,
+        REFRESH_TOKEN_EXPIRES_IN * 60,
+        "/",
+        None,
+        False,
+        True,
+        "lax",
+    )
+    response.set_cookie(
+        "logged_in",
+        "True",
+        ACCESS_TOKEN_EXPIRES_IN * 60,
+        ACCESS_TOKEN_EXPIRES_IN * 60,
+        "/",
+        None,
+        False,
+        False,
+        "lax",
+    )
+    
     return {"access_token": access_token, "token_type": "bearer"}
 
 

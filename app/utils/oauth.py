@@ -4,7 +4,6 @@ from jose import jwt, JWTError
 from fastapi.security import OAuth2PasswordBearer
 from typing import Annotated
 from fastapi import Depends, HTTPException, status
-from models.objectid import CusObjectId
 from db.helper.article import retrieve_article_by_slug, retrieve_article
 from db.helper.comment import retrieve_comment
 from schemas.response.user import CurrentUser
@@ -46,7 +45,7 @@ def create_refresh_token(_id: str, email: str, expires_delta: int | None = None)
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm=ALGORITHM);
 
 
-def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> CurrentUser:
+def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict:
     try:
         user = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
         if user is None:

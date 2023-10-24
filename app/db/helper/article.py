@@ -63,7 +63,7 @@ async def unique_slug_id(title: str) -> str:
 
 
 
-async def create_article(article_data: CreateArticle, user: dict) -> str:
+async def create_article(article_data: CreateArticle, user: dict) -> dict[str, str]:
     # Generate the slug from the title
     article = article_data.model_dump()
     article["slug"] = await unique_slug_id(article["title"])
@@ -80,7 +80,8 @@ async def create_article(article_data: CreateArticle, user: dict) -> str:
             detail=f"failure to create article,DB error; {str(e)}",
         )
     # Check if the insertion was successful
-    return str(result.inserted_id)
+    return {"id": str(result.inserted_id),
+            "slug": article["slug"]}
  
 
 

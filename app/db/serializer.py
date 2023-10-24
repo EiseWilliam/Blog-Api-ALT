@@ -40,7 +40,7 @@ def user_entity(user) -> dict:
 
 
 async def user_list_entity(users) -> list[dict]:
-    users_list = [article_entity(user) for user in users]
+    users_list = [user_entity(user) for user in users]
     return users_list
 
 

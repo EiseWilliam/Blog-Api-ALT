@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from models.objectid import CusObjectId
+
 
 class Comment(BaseModel):
     article_id: str

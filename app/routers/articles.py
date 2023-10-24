@@ -4,30 +4,11 @@ from schemas.articles import CreateArticle, UpdateArticle
 from db.helper.article import create_article, delete_article_by_path, retrieve_article, update_article,get_n_articles, delete_article, retrieve_article_by_slug
 from db.serializer import article_list_entity
 from db.helper.article import article_list_by_author
-from models.objectid import CusObjectId
 from utils.oauth import get_current_user, check_update_right
-from fastapi import Request, Response
-from fastapi.routing import APIRoute
 import time
 
-class TimedRoute(APIRoute):
-    def get_route_handler(self) :
-        original_route_handler = super().get_route_handler()
 
-        async def custom_route_handler(request: Request) -> Response:
-            before = time.time()
-            response: Response = await original_route_handler(request)
-            duration = time.time() - before
-            response.headers["X-Response-Time"] = str(duration)
-            print(f"route duration: {duration}")
-            print(f"route response: {response}")
-            print(f"route response headers: {response.headers}")
-            return response
-
-        return custom_route_handler
-
-
-router = APIRouter(route_class = TimedRoute)
+router = APIRouter()
 
 # Query operations
 @router.get("all/", status_code=status.HTTP_200_OK)

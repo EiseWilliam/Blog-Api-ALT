@@ -2,7 +2,6 @@ from tabnanny import check
 from fastapi import APIRouter, Depends, Body, HTTPException, status
 from typing import Annotated
 from schemas.comments import CreateComment, UpdateComment
-from models.objectid import CusObjectId
 from db.helper.comment import add_comment, retrieve_comment, update_comment, delete_comment, comment_list_on_article
 from db.serializer import comment_entity, comment_list_entity
 from utils.oauth import get_current_user
