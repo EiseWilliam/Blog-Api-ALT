@@ -1,4 +1,5 @@
 import re
+from typing import Any
 import unicodedata
 from db.database import User, Article, Comment
 from db.serializer import (
@@ -85,7 +86,7 @@ async def create_article(article_data: CreateArticle, user: dict) -> dict[str, s
  
 
 
-async def update_article(id: str, article_details: UpdateArticle) -> dict:
+async def update_article(id: str, article_details: UpdateArticle) -> Any:
     article_data = article_details.model_dump(exclude_unset=True)
     article_data["date_updated"] = datetime.now()
     try:
@@ -95,7 +96,23 @@ async def update_article(id: str, article_details: UpdateArticle) -> dict:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"failure to update article,DB error; {str(e)}",
         )
-    return result.upserted_id
+    if result.acknowledged:
+        return article_entity(Article.find_one({"_id": ObjectId(id)}))  # type: ignore
+    
+    
+async def update_article_slug(slug: str, article_details: UpdateArticle) -> dict | None:
+    article_data = article_details.model_dump(exclude_unset=True)
+    article_data["date_updated"] = datetime.now()
+    try:
+        result =  Article.update_one({"slug": slug}, {"$set": article_data})
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"failure to update article,DB error; {str(e)}",
+        )
+    if result.acknowledged:
+        return article_entity(Article.find_one({"slug": slug}))  # type: ignore
+
 
 async def retrieve_article_by_slug(slug_id: str) -> dict | None:
     article = Article.find_one({"slug": slug_id})

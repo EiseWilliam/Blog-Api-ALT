@@ -5,11 +5,12 @@ from datetime import datetime
 
 
 class ArticleResponse(BaseModel):
+    id: str 
     title: str
     slug: str 
     body: str
-    categories: Optional[list]
+    categories: list 
     author: str 
-    date_published: datetime
+    date_published: datetime 
     date_updated: datetime
 
