@@ -1,25 +1,31 @@
 from datetime import datetime, timedelta
 from typing import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import (APIRouter, Body, Depends, Form, HTTPException, Response,
-                     status)
+from fastapi import APIRouter, Body, Depends, Form, HTTPException, Response, status
+from pydantic import Field
 
 
 from ..config.settings import ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN
+
 # from app.auth import oauth2
 from ..db.database import User
 from ..db.helper.user import create_user, find_user
 from ..db.serializer import user_entity
 from ..schemas.users import CreateUser, UpdateUser
-from ..utils.oauth import (create_access_token, create_refresh_token,
-                         get_current_user, hash_password, verify_password)
+from ..utils.oauth import (
+    create_access_token,
+    create_refresh_token,
+    get_current_user,
+    hash_password,
+    verify_password,
+)
 
 router = APIRouter()
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(
-    payload: Annotated[CreateUser, Body(..., embed=True)], response: Response
+    payload: CreateUser, response: Response
 ) -> dict:
     """
     Register a new user.
@@ -39,14 +45,14 @@ async def register(
     # Compare and confirm password
     if payload.password != payload.confirm_password:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Password does not match"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Passwords do not match"
         )
     # # Insert the new user into the database
     feedback = create_user(payload)
 
     if feedback == False:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="User not Added"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="User not Added"
         )
     # login user
     access_token = create_access_token(*feedback)
@@ -89,7 +95,11 @@ async def register(
     )
 
     # Send both access
-    return {"status": "User registered successfully!", "access_token": access_token}
+    return {
+        "status": "success",
+        "message": "User registered successfully!",
+        "token": {"access_token": access_token, "token_type": "bearer"},
+    }
 
 
 # User sign in
@@ -112,10 +122,10 @@ async def login(
     """
 
     # check if user exists
-    user: dict = find_user(payload.username) # type: ignore
+    user: dict = find_user(payload.username)  # type: ignore
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not registered"
         )
 
     if not verify_password(payload.password, user["password"]):
@@ -161,8 +171,13 @@ async def login(
         False,
         "lax",
     )
-    
-    return {"access_token": access_token, "token_type": "bearer"}
+
+    return {
+        "status": "success",
+        "message": "Logged in successfully!",
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
 
 
 # user logout
@@ -183,4 +198,4 @@ async def logout(
     response.delete_cookie("refresh_token")
     response.delete_cookie("logged_in")
 
-    return {"status": "success", "message": "User logged out"}
+    return {"status": "success", "message": "User logged out!"}

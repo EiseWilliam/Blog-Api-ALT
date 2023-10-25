@@ -5,7 +5,6 @@ from datetime import datetime
 from typing import Any
 from fastapi import HTTPException, status
 
-
 from ...schemas.articles import CreateArticle, UpdateArticle
 from ..database import Article, Comment, User
 from ..serializer import (article_entity, article_list_entity, comment_entity,
@@ -13,7 +12,6 @@ from ..serializer import (article_entity, article_list_entity, comment_entity,
 
 
 def slugify(string):
-
     """
     Slugify a unicode string.
 
@@ -21,9 +19,7 @@ def slugify(string):
 
         >>> slugify(u"Héllø Wörld")
         u"hello-world"
-
     """
-
     return re.sub(r'[-\s]+', '-',
             str(
                 re.sub(r'[^\w\s-]', '',
@@ -56,8 +52,17 @@ async def unique_slug_id(title: str) -> str:
         return slug
 
 
-
 async def create_article(article_data: CreateArticle, user: dict) -> dict[str, str]:
+    """
+    Creates a new article in the database.
+
+    Args:
+        article_data (CreateArticle): The article data to be created.
+        user (dict): The user creating the article.
+
+    Returns:
+        dict[str, str]: A dictionary containing the ID and slug of the newly created article.
+    """
     # Generate the slug from the title
     article = article_data.model_dump()
     article["slug"] = await unique_slug_id(article["title"])
@@ -76,10 +81,19 @@ async def create_article(article_data: CreateArticle, user: dict) -> dict[str, s
     # Check if the insertion was successful
     return {"id": str(result.inserted_id),
             "slug": article["slug"]}
- 
 
 
 async def update_article(id: str, article_details: UpdateArticle) -> Any:
+    """
+    Updates an existing article in the database.
+
+    Args:
+        id (str): The ID of the article to be updated.
+        article_details (UpdateArticle): The updated article data.
+
+    Returns:
+        Any: The updated article data.
+    """
     article_data = article_details.model_dump(exclude_unset=True)
     article_data["date_updated"] = datetime.now()
     try:
@@ -91,9 +105,19 @@ async def update_article(id: str, article_details: UpdateArticle) -> Any:
         )
     if result.acknowledged:
         return article_entity(Article.find_one({"_id": ObjectId(id)}))  # type: ignore
-    
-    
+
+
 async def update_article_slug(slug: str, article_details: UpdateArticle) -> dict | None:
+    """
+    Updates an existing article in the database by its slug.
+
+    Args:
+        slug (str): The slug of the article to be updated.
+        article_details (UpdateArticle): The updated article data.
+
+    Returns:
+        dict | None: The updated article data or None if the update was unsuccessful.
+    """
     article_data = article_details.model_dump(exclude_unset=True)
     article_data["date_updated"] = datetime.now()
     try:
@@ -108,6 +132,15 @@ async def update_article_slug(slug: str, article_details: UpdateArticle) -> dict
 
 
 async def retrieve_article_by_slug(slug_id: str) -> dict:
+    """
+    Retrieves an article from the database by its slug.
+
+    Args:
+        slug_id (str): The slug of the article to be retrieved.
+
+    Returns:
+        dict: The retrieved article data.
+    """
     try:
         article = Article.find_one({"slug": slug_id})
     except Exception as e:
@@ -117,13 +150,33 @@ async def retrieve_article_by_slug(slug_id: str) -> dict:
         )
     return article_entity(article)
 
+
 async def check_if_slug_exists(slug_id: str) -> bool:
+    """
+    Checks if an article with the given slug exists in the database.
+
+    Args:
+        slug_id (str): The slug to be checked.
+
+    Returns:
+        bool: True if an article with the given slug exists, False otherwise.
+    """
     article = Article.find_one({"slug": slug_id})
     if article:
         return True
     return False
 
+
 async def retrieve_article(article_id: str) -> dict | None:
+    """
+    Retrieves an article from the database by its ID.
+
+    Args:
+        article_id (str): The ID of the article to be retrieved.
+
+    Returns:
+        dict | None: The retrieved article data or None if the article was not found.
+    """
     try:
         article = Article.find_one({"_id": ObjectId(article_id)})
     except Exception as e:
@@ -134,7 +187,17 @@ async def retrieve_article(article_id: str) -> dict | None:
     if article:
         return article_entity(article)
 
+
 async def get_n_articles(n: int) -> list:
+    """
+    Retrieves a list of the latest n articles from the database.
+
+    Args:
+        n (int): The number of articles to retrieve.
+
+    Returns:
+        list: A list of the latest n articles.
+    """
     try:
         articles = list(article for article in Article.find().limit(n))
     except Exception as e:
@@ -145,15 +208,16 @@ async def get_n_articles(n: int) -> list:
     list_ = await article_list_entity(articles)
     return list_
 
+
 async def article_list_by_author(user_id) -> list:
     """
-    retrieves a list of articles written by a specific author from
-    a database and returns it.
-    
-    `param user_id` the unique identifier of the author whose articles we
-    want to retrieve
-    `return` returns a list of articles written by a specific
-    author.
+    Retrieves a list of articles from the database by the author's ID.
+
+    Args:
+        user_id: The ID of the author.
+
+    Returns:
+        list: A list of articles written by the author.
     """
     try:
         articles = list(article for article in Article.find({"author": user_id}))
@@ -191,3 +255,7 @@ async def delete_article_by_path(slug_id: str):
             )
         else:
             return True
+        
+async def dynamic_article_search(query, category=None ):
+    pass
+    

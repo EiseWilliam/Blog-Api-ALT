@@ -122,6 +122,7 @@ async def Publish_new_article(
     status_code=status.HTTP_200_OK,
     responses={
         200: {"model": MessageResponse},
+        401: {"model": ErrorMessageResponse},
         404: {"model": ErrorMessageResponse},
         500: {"model": ErrorMessageResponse},
     },

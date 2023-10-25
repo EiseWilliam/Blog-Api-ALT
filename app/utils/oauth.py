@@ -60,7 +60,7 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict:
 
 
 
-async def check_update_right(id: str, user_id: str, is_comment: bool = False):
+async def check_update_right(id: str, user_id: str, is_comment: bool = False) -> dict:
     if is_comment:
         item = await retrieve_comment(id)
     else:

@@ -1,10 +1,10 @@
 from pymongo import ASCENDING, MongoClient
 from pymongo.server_api import ServerApi
 
-uri = "mongodb://localhost:27017/"
+URI = "mongodb://localhost:27017/"
 
   # Set the Stable API version when creating a new client
-client = MongoClient(uri, server_api=ServerApi('1'))
+client = MongoClient(URI, server_api=ServerApi('1'))
 
 def connect_to_db():
     try:

@@ -1,5 +1,6 @@
 import re
 import unicodedata
+from ..db.database import Article
 
 
 def slugify(string):

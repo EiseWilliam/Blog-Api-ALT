@@ -107,7 +107,7 @@ def find_user(email: str) -> dict | None:
     if user:
         serialized_user = user_entity(user)
         return serialized_user
-
+    return None
 
 
 async def dynamic_user_search(query: str) -> list[dict]:

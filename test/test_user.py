@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
-from app.main import app
+from ..app.main import app
+from .clear_test_db import clear_user
 
 client = TestClient(app)
 
@@ -52,3 +53,4 @@ def test_show_profile_invalid_token():
     # Check that the request was unauthorized
     assert response.status_code == 401
     assert response.json()["detail"] == "Could not validate credentials"
+    
