@@ -17,13 +17,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      ACCESS_TOKEN_EXPIRES_IN: ${{ secrets.ACCESS_TOKEN_EXPIRES_IN }}
-      REFRESH_TOKEN_EXPIRES_IN: ${{ secrets.REFRESH_TOKEN_EXPIRES_IN }}
       JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-      JWT_REFRESH_SECRET_KEY: ${{ secrets.JWT_REFRESH_SECRET_KEY }}
-      ALGORITHM: ${{ secrets.ALGORITHM }}
-      ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRES_IN }}
-      REFRESH_TOKEN_EXPIRE_MINUTES: ${{ secrets.REFRESH_TOKEN_EXPIRES_IN }}
+
 
     steps:
     - name: Checkout Code
@@ -38,17 +33,13 @@ jobs:
     - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:
-        python-version: 3.10
+        python-version: 3.11
 
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-
-    - name: Install MongoDB-related Packages
-      run: |
-        pip install pymongo
-
+        
     - name: Test with pytest
       run: |
         pytest
