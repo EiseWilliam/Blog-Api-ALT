@@ -1,24 +1,16 @@
-from fastapi import APIRouter, Depends, Body, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 from typing import Annotated, Any
 
-from pydantic import Field
-from schemas.comments import CreateComment, UpdateComment
-from db.helper.comment import (
-    add_comment,
-    retrieve_comment,
-    update_comment,
-    delete_comment,
-    get_comments_on_article,
-)
-from db.serializer import comment_entity, comment_list_entity
-from utils.oauth import check_update_right, get_current_user
-from db.helper.article import retrieve_article_by_slug, check_if_slug_exists
-from models.responses import (
-    CommentListResponseModel,
-    ErrorMessageResponse,
-    MessageResponse,
-    PostRefrenceResponseModel,
-)
+
+from ..db.helper.article import check_if_slug_exists, retrieve_article_by_slug
+from ..db.helper.comment import (add_comment, delete_comment,
+                               get_comments_on_article, retrieve_comment,
+                               update_comment)
+from ..db.serializer import comment_entity, comment_list_entity
+from ..models.responses import (CommentListResponseModel, ErrorMessageResponse,
+                              MessageResponse, PostRefrenceResponseModel)
+from ..schemas.comments import CreateComment, UpdateComment
+from ..utils.oauth import check_update_right, get_current_user
 
 router = APIRouter()
 

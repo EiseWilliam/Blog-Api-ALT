@@ -1,46 +1,21 @@
-from datetime import datetime, timedelta
-from mailbox import Message
+from fastapi import (APIRouter, Body, Depends, Form, HTTPException, Query,
+                     Response, status)
 from typing import Annotated, Any
-from unittest.mock import Base
-from urllib import response
-from bson.objectid import ObjectId
-from decouple import config
-from fastapi import (
-    APIRouter,
-    Query,
-    Response,
-    status,
-    Depends,
-    HTTPException,
-    Body,
-    Form,
-)
-from fastapi.security import OAuth2PasswordRequestForm
-from fastapi.responses import JSONResponse
-from pydantic import Field
+
+
 
 # from app.auth import oauth2
-from db.helper.article import article_list_by_author
-from db.helper.article import create_article
-from db.helper.user import (
-    create_user,
-    find_user,
-    update_user,
-    retrieve_user,
-    delete_user,
-    dynamic_user_search,
-)
-from schemas.response.user import UserProfileResponse, CurrentUser
-from schemas.users import UpdateUser, User, UserQuery
-from schemas.articles import CreateArticle
-from utils.oauth import (
-    hash_password,
-    verify_password,
-    create_access_token,
-    create_refresh_token,
-    get_current_user,
-)
-from models.responses import ArticleListResponseModel, MessageResponse, PostRefrenceResponseModel, UserResponseModel, UserListResponseModel
+from ..db.helper.article import article_list_by_author, create_article
+from ..db.helper.user import (create_user, delete_user, dynamic_user_search,
+                            find_user, retrieve_user, update_user)
+from ..models.responses import (ArticleListResponseModel, ErrorMessageResponse,
+                              MessageResponse, PostRefrenceResponseModel,
+                              UserListResponseModel, UserResponseModel)
+from ..schemas.articles import CreateArticle
+from ..schemas.response.user import CurrentUser, UserProfileResponse
+from ..schemas.users import UpdateUser, User, UserQuery
+from ..utils.oauth import (create_access_token, create_refresh_token,
+                         get_current_user, hash_password, verify_password)
 
 router = APIRouter()
 
@@ -49,7 +24,12 @@ router = APIRouter()
 @router.get(
     "/",
     status_code=status.HTTP_200_OK,
-    response_model=UserResponseModel,
+    responses={
+        200: {"model": UserResponseModel},
+        401: {"model": ErrorMessageResponse},
+        404: {"model": ErrorMessageResponse},
+        500: {"model": ErrorMessageResponse},
+    },
     response_description="User profile retrieved successfully",
 )
 async def show_profile(user: Annotated[dict, Depends(get_current_user)]) -> Any:
@@ -67,7 +47,16 @@ async def show_profile(user: Annotated[dict, Depends(get_current_user)]) -> Any:
 
 
 # update user profile
-@router.patch("/", status_code=status.HTTP_200_OK, response_model= MessageResponse)
+@router.patch(
+    "/",
+    status_code=status.HTTP_200_OK,
+    responses={
+        200: {"model": MessageResponse},
+        401: {"model": ErrorMessageResponse},
+        404: {"model": ErrorMessageResponse},
+        500: {"model": ErrorMessageResponse},
+    },
+)
 async def update_profile(
     user_details: UpdateUser, user: Annotated[dict, Depends(get_current_user)]
 ) -> Any:
@@ -77,32 +66,50 @@ async def update_profile(
     profile = await update_user(user["id"], user_details)  # type: ignore
     if profile == None:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="User not Updated"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="User not Updated"
         )
     return MessageResponse(message="User profile updated successfully")
 
 
 # get my articles
-@router.get("/articles", status_code=status.HTTP_200_OK, response_model=ArticleListResponseModel)
+@router.get(
+    "/articles",
+    status_code=status.HTTP_200_OK,
+    responses={
+        200: {"model": ArticleListResponseModel},
+        401: {"model": ErrorMessageResponse},
+    },
+)
 async def my_articles(user: Annotated[dict, Depends(get_current_user)]) -> Any:
     """
     Get the articles of the currently logged in user.
     """
     articles = await article_list_by_author(user["id"])
     if articles:
-        return ArticleListResponseModel(articles=articles, message="Articles retrieved successfully")  
+        return ArticleListResponseModel(
+            articles=articles, message="Articles retrieved successfully"
+        )
     else:
         return ArticleListResponseModel(articles=[], message="No articles found")
 
 
-@router.post("/article", status_code=status.HTTP_201_CREATED, response_model=PostRefrenceResponseModel)
+@router.post(
+    "/article",
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        201: {"model": PostRefrenceResponseModel},
+        401: {"model": ErrorMessageResponse},
+        404: {"model": ErrorMessageResponse},
+        500: {"model": ErrorMessageResponse},
+    },
+)
 async def Publish_new_article(
     article: CreateArticle, user: Annotated[dict, Depends(get_current_user)]
 ) -> dict:
     result = await create_article(article, user)
     if result == False:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Article creation failed",
         )
     else:
@@ -110,16 +117,24 @@ async def Publish_new_article(
 
 
 # delete my account
-@router.delete("/", status_code=status.HTTP_200_OK, response_model=MessageResponse)
+@router.delete(
+    "/",
+    status_code=status.HTTP_200_OK,
+    responses={
+        200: {"model": MessageResponse},
+        404: {"model": ErrorMessageResponse},
+        500: {"model": ErrorMessageResponse},
+    },
+)
 async def delete_account(user: Annotated[dict, Depends(get_current_user)]) -> dict:
     """
     delete my account
     """
     if await delete_user(user["id"]) == False:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="User not Deleted"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="User not Deleted"
         )
-    return {"message": "User Deleted Successfully"}
+    return {"status": "success", "message": "User Deleted Successfully"}
 
 
 # view other users profile

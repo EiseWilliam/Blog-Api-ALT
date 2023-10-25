@@ -1,12 +1,9 @@
 from enum import Enum
-from pydantic import BaseModel
+from typing import Annotated, List, Optional
+
 from fastapi import Body, Form
-from typing import Optional, Annotated
-
-
-
-from typing import List, Annotated
 from pydantic import BaseModel, Field
+
 
 class ArticleIn:
     pass
@@ -41,7 +38,7 @@ class CreateArticle(BaseModel):
     categories: Optional[list[Category]] = Field(None)
 
 class UpdateArticle(BaseModel):
-    title: Optional[str] = Field(None, min_length=5, max_length=100)
-    body: Optional[str] = Body(None, max_length=10000)
-    categories: Optional[list[Category]] = Field(None)
+    title: str | None  = Field("My Brilliant Article", min_length=5, max_length=100)
+    body: str | None  = Body(None, max_length=10000)
+    categories: list[Category] | None  = Field(None)
 

@@ -1,10 +1,9 @@
-
-from email import message
-from telnetlib import STATUS
 from pydantic import BaseModel
-from models.response.comment import CommentResponse
-from models.response.article import ArticleResponse
-from models.response.user import UserResponse
+
+
+from .response.article import ArticleResponse
+from .response.comment import CommentResponse
+from .response.user import UserResponse
 
 
 # show profile
@@ -13,26 +12,32 @@ class UserResponseModel(BaseModel):
     message: str = "user profile retrieved successfully"
     user: UserResponse
 class UserListResponseModel(BaseModel):
-    message: str
+    status: str = "success"
+    message: str = "n users retrieved successfully"
     users: list[UserResponse]
     
 class ArticleResponseModel(BaseModel):
-    message: str
+    status: str = "success"
+    message: str = "article retrieved successfully"
     article: ArticleResponse
     
 class ArticleListResponseModel(BaseModel):
-    message: str
+    status: str = "success"
+    message: str = "n articles retrieved successfully"
     articles: list[ArticleResponse]
 
 class CommentResponseModel(BaseModel):
-    message: str
+    status: str = "success"
+    message: str = "comment retrieved successfully"
     comment: CommentResponse
     
 class CommentListResponseModel(BaseModel):
-    message: str
-    comments: list[CommentResponse]
+    status: str = "success"
+    message: str = "n comments retrieved successfully"
+    comments: list[CommentResponse] 
 
 class PostRefrenceResponseModel(BaseModel):
+    status: str = "success"
     message: str = "post successful"
     post: dict[str,str] = {"id": "1", "article": "nice-article"}
     

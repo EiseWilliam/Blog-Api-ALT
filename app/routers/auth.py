@@ -1,24 +1,18 @@
 from datetime import datetime, timedelta
 from typing import Annotated
-from bson.objectid import ObjectId
-from decouple import config
-from fastapi import APIRouter, Response, status, Depends, HTTPException, Body, Form
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import (APIRouter, Body, Depends, Form, HTTPException, Response,
+                     status)
 
+
+from ..config.settings import ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN
 # from app.auth import oauth2
-from db.database import User
-from db.serializer import user_entity
-from db.helper.user import create_user, find_user
-from schemas.users import CreateUser, UpdateUser
-from utils.oauth import (
-    hash_password,
-    verify_password,
-    create_access_token,
-    create_refresh_token,
-    get_current_user,
-)
-from config.settings import ACCESS_TOKEN_EXPIRES_IN, REFRESH_TOKEN_EXPIRES_IN
-
+from ..db.database import User
+from ..db.helper.user import create_user, find_user
+from ..db.serializer import user_entity
+from ..schemas.users import CreateUser, UpdateUser
+from ..utils.oauth import (create_access_token, create_refresh_token,
+                         get_current_user, hash_password, verify_password)
 
 router = APIRouter()
 

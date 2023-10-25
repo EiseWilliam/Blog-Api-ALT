@@ -1,7 +1,8 @@
-from fastapi.routing import APIRoute
-from fastapi import Request, Response
-import time
 import logging
+import time
+
+from fastapi import Request, Response
+from fastapi.routing import APIRoute
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

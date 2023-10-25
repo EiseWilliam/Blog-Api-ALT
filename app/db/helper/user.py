@@ -1,13 +1,15 @@
 
-from db.database import User, Article, Comment
-from db.serializer import user_entity, article_entity, comment_entity, user_list_entity
-from schemas.comments import CreateComment, UpdateComment
-from schemas.users import CreateUser, UpdateUser, UserQuery
-from utils.oauth import hash_password
-
-from fastapi import HTTPException
-from bson import ObjectId
 from datetime import datetime
+from bson import ObjectId
+from fastapi import HTTPException
+
+
+from ..database import Article, Comment, User
+from ..serializer import (article_entity, comment_entity, user_entity,
+                           user_list_entity)
+from ...schemas.comments import CreateComment, UpdateComment
+from ...schemas.users import CreateUser, UpdateUser, UserQuery
+from ...utils.oauth import hash_password
 
 
 # add a created timestamp

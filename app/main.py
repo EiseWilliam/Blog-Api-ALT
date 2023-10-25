@@ -1,15 +1,13 @@
+
+from decouple import config
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from decouple import config
-from db.database import db
-import uvicorn
-from middleware.logger import CustomAPIRoute
-from db.database import connect_to_db, close_db_connection
-from middleware.errors import error_handler, http_422_error_handler
 
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
-from routers import auth, articles, user, comments, blog
+
+from .middleware.errors import error_handler, http_422_error_handler
+from .db.database import close_db_connection, connect_to_db, client
+from .routers import articles, auth, blog, comments, user
 
 app = FastAPI()
 
@@ -19,8 +17,7 @@ origins = [
 
 
 
-        # Add the middleware to the app
-app.router.route_class = CustomAPIRoute
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -50,20 +47,13 @@ def root():
     return {"message": "Welcome to Blog API"}
 
 
+
 @app.get("/api/test-mongodb-connection", status_code=200)
 async def test_mongodb_connection():
     try:
-        # Attempt to perform a simple database operation, like listing collections
-        collections = []
-        for collection in db.list_collection_names():
-            collections.append(collection)
-        return collections
+        log = client.server_info()
+        return {"message": "MongoDB connection successful",
+                "server_info": log}
     except Exception as e:
         # If an error occurs, return an error message
         raise HTTPException(status_code=500, detail=f"MongoDB connection failed: {str(e)}")
-
-    
-
-
-if __name__ == "__main__":
-    uvicorn.run(app = "main:app", port=8000, reload=True)

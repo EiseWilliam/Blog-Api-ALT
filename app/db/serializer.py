@@ -1,8 +1,7 @@
-from typing import Generator
-from db.database import User, Article, Comment
-from schemas.users import Profile
-from schemas.response.user import UserProfileResponse
-from pymongo import ReturnDocument
+
+from ..schemas.response.user import UserProfileResponse
+from ..schemas.users import Profile
+
 
 # Database serializers
 def profile_object(profile) -> Profile | dict:

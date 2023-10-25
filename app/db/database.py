@@ -1,6 +1,5 @@
-from pymongo import MongoClient, ASCENDING
+from pymongo import ASCENDING, MongoClient
 from pymongo.server_api import ServerApi
-
 
 uri = "mongodb://localhost:27017/"
 

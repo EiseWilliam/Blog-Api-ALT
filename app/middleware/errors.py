@@ -1,7 +1,8 @@
-from fastapi import Request, HTTPException
+from typing import Iterable
+
+from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
-from typing import Iterable
 
 
 async def error_handler(request: Request, exc: HTTPException) -> JSONResponse:

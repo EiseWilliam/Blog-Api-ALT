@@ -1,22 +1,15 @@
 import re
-from typing import Any
 import unicodedata
-from db.database import User, Article, Comment
-from db.serializer import (
-    user_entity,
-    article_entity,
-    article_list_entity,
-    comment_entity,
-)
-from schemas.articles import CreateArticle, UpdateArticle
-
-
-
-
 from bson import ObjectId
 from datetime import datetime
-from pymongo.collection import Collection
+from typing import Any
 from fastapi import HTTPException, status
+
+
+from ...schemas.articles import CreateArticle, UpdateArticle
+from ..database import Article, Comment, User
+from ..serializer import (article_entity, article_list_entity, comment_entity,
+                           user_entity)
 
 
 def slugify(string):
@@ -114,10 +107,15 @@ async def update_article_slug(slug: str, article_details: UpdateArticle) -> dict
         return article_entity(Article.find_one({"slug": slug}))  # type: ignore
 
 
-async def retrieve_article_by_slug(slug_id: str) -> dict | None:
-    article = Article.find_one({"slug": slug_id})
-    if article:
-        return article_entity(article)
+async def retrieve_article_by_slug(slug_id: str) -> dict:
+    try:
+        article = Article.find_one({"slug": slug_id})
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"failure to retrieve article,DB error {str(e)}",
+        )
+    return article_entity(article)
 
 async def check_if_slug_exists(slug_id: str) -> bool:
     article = Article.find_one({"slug": slug_id})
@@ -126,18 +124,44 @@ async def check_if_slug_exists(slug_id: str) -> bool:
     return False
 
 async def retrieve_article(article_id: str) -> dict | None:
-    article = Article.find_one({"_id": ObjectId(article_id)})
+    try:
+        article = Article.find_one({"_id": ObjectId(article_id)})
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"failure to retrieve article,DB error {str(e)}",
+        )
     if article:
         return article_entity(article)
 
 async def get_n_articles(n: int) -> list:
-    articles = list(article for article in Article.find().limit(n))
+    try:
+        articles = list(article for article in Article.find().limit(n))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"failure to retrieve articles,DB error; {str(e)}",
+        )
     list_ = await article_list_entity(articles)
     return list_
 
 async def article_list_by_author(user_id) -> list:
-    """Returns list of articles by author"""
-    articles = list(article for article in Article.find({"author": user_id}))
+    """
+    retrieves a list of articles written by a specific author from
+    a database and returns it.
+    
+    `param user_id` the unique identifier of the author whose articles we
+    want to retrieve
+    `return` returns a list of articles written by a specific
+    author.
+    """
+    try:
+        articles = list(article for article in Article.find({"author": user_id}))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"failure to retrieve articles,DB error; {str(e)}",
+        )
     list_ = await article_list_entity(articles)
     return list_
 

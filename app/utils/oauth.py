@@ -1,15 +1,15 @@
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
-from jose import jwt, JWTError
-from fastapi.security import OAuth2PasswordBearer
 from typing import Annotated
-from fastapi import Depends, HTTPException, status
-from db.helper.article import retrieve_article_by_slug, retrieve_article
-from db.helper.comment import retrieve_comment
-from schemas.response.user import CurrentUser
 
-from config.settings import JWT_SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES
-
+from ..config.settings import (ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM,
+                             JWT_SECRET_KEY, REFRESH_TOKEN_EXPIRE_MINUTES)
+from ..db.helper.article import retrieve_article, retrieve_article_by_slug
+from ..db.helper.comment import retrieve_comment
+from ..schemas.response.user import CurrentUser
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 

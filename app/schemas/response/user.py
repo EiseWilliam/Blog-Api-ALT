@@ -1,11 +1,10 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
 from datetime import datetime
+from pydantic import BaseModel, EmailStr
 
 
-from schemas.users import Profile
-    
-    
+from ...schemas.users import Profile
+
+
 class UserProfileResponse(BaseModel):
     id: str
     username: str | None = None

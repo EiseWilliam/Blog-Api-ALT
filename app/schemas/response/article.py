@@ -1,6 +1,7 @@
+from datetime import datetime
+
 from fastapi import Body
 from pydantic import BaseModel, Field
-from datetime import datetime
 
 
 class ArticleResponse(BaseModel):

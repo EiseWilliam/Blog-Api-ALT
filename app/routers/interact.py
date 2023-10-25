@@ -1,8 +1,8 @@
-from fastapi import APIRouter, HTTPException, Depends
-from fastapi import status
 from typing import Annotated
-from utils.oauth import get_current_user
+
 from db.helper.interact import like_an_item
+from fastapi import APIRouter, Depends, HTTPException, status
+from utils.oauth import get_current_user
 
 router = APIRouter()
     

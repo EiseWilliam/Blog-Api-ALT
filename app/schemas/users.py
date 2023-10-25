@@ -1,16 +1,17 @@
-from pydantic import BaseModel, EmailStr
 from datetime import datetime
+
 # import field
-from pydantic import Field
+from pydantic import BaseModel, EmailStr, Field
+
 
 class User(BaseModel):
     email: EmailStr
 
 
 class CreateUser(User):
-    username: str
-    password: str
-    confirm_password: str
+    username: str = Field(min_length=4, max_length=15)
+    password: str = Field(min_length=8, max_length=50)
+    confirm_password: str = Field(min_length=8, max_length=50)
 
 
 class Profile(BaseModel):
@@ -26,4 +27,4 @@ class UpdateUser(BaseModel):
 
 
 class UserQuery(BaseModel):
-    query: str = Field(..., description="Search query", min_length=4, max_length=50)
+    query: str = Field(..., description="Search query", min_length=4, max_length=20)

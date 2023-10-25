@@ -1,14 +1,15 @@
 
 import re
-from db.database import Comment
-from db.serializer import comment_entity, comment_list_entity
-from schemas.comments import CreateComment
-
-
+from datetime import datetime
+from bson import ObjectId
 from fastapi import HTTPException, status
 
-from bson import ObjectId
-from datetime import datetime
+
+
+from ..database import Comment
+from ..serializer import comment_entity, comment_list_entity
+from ...schemas.comments import CreateComment
+
 
 async def add_comment(comment: CreateComment, user_id: str, slug: str) -> str:
     comment_data = comment.model_dump()

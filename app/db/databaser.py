@@ -18,6 +18,7 @@ async def connect_to_mongo():
 
 import logging
 
+
 async def close_mongo_connection():
     logging.info("Closing database connection...")
     db.client.close()
@@ -25,6 +26,7 @@ async def close_mongo_connection():
     
     
 from motor.motor_asyncio import AsyncIOMotorClient
+
 
 async def get_database() -> AsyncIOMotorClient:
     return db.client
