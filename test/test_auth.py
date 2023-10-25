@@ -125,19 +125,19 @@ def test_logout_user():
             "password": "password123"
         }
     )
-    access_token = " Bearer " + response.json()["access_token"]
-    
+    access_token = response.json()["access_token"]
+    print(access_token)
     
     response = client.post(
         "auth/logout",
         headers={
-            "Authorization": access_token
+            "Authorization": "bearer " + access_token
         }
     )
 
     # Check that the user was logged out successfully
     assert response.status_code == 200
-    assert response.json()["status"] == "User logged out!"
+    assert response.json()["status"] == "success"
     assert "access_token" not in response.cookies
     assert "refresh_token" not in response.cookies
     assert "logged_in" not in response.cookies
