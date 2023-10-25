@@ -12,7 +12,7 @@ from .routers import articles, auth, blog, comments, user
 app = FastAPI()
 
 origins = [
-   config('CLIENT_ORIGIN'),
+    "http://localhost:3000",
 ]
 
 
