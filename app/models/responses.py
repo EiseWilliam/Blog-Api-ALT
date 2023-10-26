@@ -39,7 +39,7 @@ class CommentListResponseModel(BaseModel):
 class PostRefrenceResponseModel(BaseModel):
     status: str = "success"
     message: str = "post successful"
-    post: dict[str,str] = {"id": "1", "article": "nice-article"}
+    post: dict = {"id": "1", "article_path": "nice-article"}
     
 class MessageResponse(BaseModel):
     status: str = "success"
@@ -48,3 +48,4 @@ class MessageResponse(BaseModel):
 class ErrorMessageResponse(BaseModel):
     status: str = "error"
     message: str = "request failed"
+    # detail: str = "here is what went wrong"

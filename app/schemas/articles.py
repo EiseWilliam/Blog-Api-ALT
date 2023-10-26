@@ -9,11 +9,23 @@ class ArticleIn:
     pass
 class Category(str, Enum):
     technology = "technology"
+    tech = "tech"
+    economy = "economy"
     science = "science"
     politics = "politics"
+    geopoltics = "geopoltics"
     entertainment = "entertainment"
     sports = "sports"
-
+    health = "health"
+    education = "education"
+    travel = "travel"
+    food = "food"
+    fashion = "fashion"
+    lifestyle = "lifestyle"
+    business = "business"
+    finance = "finance"
+    news = "news"
+    
 class Article(BaseModel):
     title: str = Field(..., min_length=5, max_length=100)
     body: str = Body(..., max_length=10000)
@@ -24,7 +36,7 @@ class Article(BaseModel):
             "example": {
                 "title": "Article title",
                 "body": "Article body",
-                "categories": ["technology", "science", "politics", "entertainment", "sports"],
+                "categories": ["technology", "tech", "politics", "entertainment", "sports"],
             }
         }
 
@@ -33,9 +45,9 @@ class Article(BaseModel):
 
 
 class CreateArticle(BaseModel):
-    title: Optional[str] = Field(None, min_length=5, max_length=100)
-    body: Optional[str] = Body(None, max_length=10000)
-    categories: Optional[list[Category]] = Field(None)
+    title: str = Field(min_length=5, max_length=100)
+    body: str = Body(max_length=10000)
+    categories: list[Category] = Field(["technology", "tech"], title="Article categories")
 
 class UpdateArticle(BaseModel):
     title: str | None  = Field("My Brilliant Article", min_length=5, max_length=100)

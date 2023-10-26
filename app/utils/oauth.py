@@ -60,12 +60,15 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict:
 
 
 
-async def check_update_right(id: str, user_id: str, is_comment: bool = False) -> dict:
+async def check_update_right(id: str, user_id: str, is_comment: bool = False, is_slug: bool = False) -> dict:
     if is_comment:
         item = await retrieve_comment(id)
     else:
-        item = await retrieve_article_by_slug(id) or await retrieve_article(id)
-
+        match is_slug:
+            case True:
+                item = await retrieve_article_by_slug(id)
+            case False:
+                item = await retrieve_article(id)
     if not item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

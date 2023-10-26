@@ -80,7 +80,7 @@ async def create_article(article_data: CreateArticle, user: dict) -> dict[str, s
         )
     # Check if the insertion was successful
     return {"id": str(result.inserted_id),
-            "slug": article["slug"]}
+            "article_path": article["slug"]}
 
 
 async def update_article(id: str, article_details: UpdateArticle) -> Any:
@@ -131,7 +131,7 @@ async def update_article_slug(slug: str, article_details: UpdateArticle) -> dict
         return article_entity(Article.find_one({"slug": slug}))  # type: ignore
 
 
-async def retrieve_article_by_slug(slug_id: str) -> dict:
+async def retrieve_article_by_slug(slug_id: str) -> dict | None:
     """
     Retrieves an article from the database by its slug.
 
@@ -148,7 +148,10 @@ async def retrieve_article_by_slug(slug_id: str) -> dict:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"failure to retrieve article,DB error {str(e)}",
         )
-    return article_entity(article)
+    if article:
+        return article_entity(article)
+    else:
+        return None
 
 
 async def check_if_slug_exists(slug_id: str) -> bool:
@@ -186,6 +189,8 @@ async def retrieve_article(article_id: str) -> dict | None:
         )
     if article:
         return article_entity(article)
+    else:
+        return None
 
 
 async def get_n_articles(n: int) -> list:

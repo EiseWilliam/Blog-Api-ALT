@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .middleware.errors import error_handler, http_422_error_handler
 from .db.database import close_db_connection, connect_to_db, client
-from .routers import articles, auth, blog, comments, user
+from .routers import articles, auth, blog, comments, user, interact
 
 app = FastAPI()
 
@@ -39,14 +39,20 @@ app.include_router(user.router, tags=['User'], prefix='/user')
 # app.include_router(blog.router, tags=['Blog'], prefix='/blog')
 app.include_router(articles.router, tags=['Article'], prefix='/articles')
 app.include_router(comments.router, tags=['Comments'], prefix='/articles')
+app.include_router(interact.router, tags=['Like'], prefix='/articles')
 
 
 
-@app.get("/api/healthchecker")
-def root():
+
+
+@app.get("/")
+def home():
     return {"message": "Welcome to Blog API"}
 
 
+@app.get("/about")
+def about_page():
+    return {"message": "Welcome to Blog API"}
 
 @app.get("/api/test-mongodb-connection", status_code=200)
 async def test_mongodb_connection():

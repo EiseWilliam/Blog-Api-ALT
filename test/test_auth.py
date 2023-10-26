@@ -126,8 +126,7 @@ def test_logout_user():
         }
     )
     access_token = response.json()["access_token"]
-    print(access_token)
-    
+
     response = client.post(
         "auth/logout",
         headers={

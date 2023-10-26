@@ -8,6 +8,7 @@ from ..models.responses import (
     ArticleResponseModel,
     ErrorMessageResponse,
     MessageResponse,
+    PostRefrenceResponseModel,
 )
 from ..schemas.articles import CreateArticle, UpdateArticle
 from ..utils.oauth import check_update_right, get_current_user
@@ -85,18 +86,31 @@ async def get_article_by_id(article_id: str) -> Any:
         )
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
-async def Publish_article(
+@router.post(
+    "/",
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        201: {"model": PostRefrenceResponseModel},
+        401: {"model": ErrorMessageResponse},
+        404: {"model": ErrorMessageResponse},
+        500: {"model": ErrorMessageResponse},
+    },
+)
+async def Publish_new_article(
     article: CreateArticle, user: Annotated[dict, Depends(get_current_user)]
 ) -> dict:
-    return_id = await create_article(article, user)
-    if return_id == False:
+    result = await create_article(article, user)
+    if result == False:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Article creation failed",
         )
     else:
-        return {"id": return_id, "message": "Article published successfully"}
+        print(result)
+        return {
+            "message": "Article created successfully",
+            "post": result,
+        } 
 
 
 @router.patch(
@@ -156,7 +170,7 @@ async def edit_article_by_id(
 )
 async def delete_article_by_id(
     article_id: str, user: dict = Depends(get_current_user)
-) -> dict:
+) -> Any:
     """
     Delete an article with the given article_id.
 
@@ -170,10 +184,10 @@ async def delete_article_by_id(
     Raises:
         HTTPException: If the user is not authorized to delete the article or if the deletion fails.
     """
-    if check_update_right(article_id, user["id"]):
+    if await check_update_right(article_id, user["id"]):
         result = await delete_article(article_id)
         if result:
-            return {"message": "Article deleted successfully"}
+            return MessageResponse(message= "Article deleted successfully")
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -203,7 +217,7 @@ async def edit_article_use_path(
     article: Annotated[UpdateArticle, Body(...)],
     user: Annotated[dict, Depends(get_current_user)],
 ) -> Any:
-    if await check_update_right(slug, user["id"]):
+    if await check_update_right(slug, user["id"], is_slug=True):
         updated_article = await update_article_slug(slug, article)
         if updated_article:
             return ArticleResponseModel(article=updated_article, message="Article updated successfully")  # type: ignore
@@ -250,11 +264,11 @@ async def get_article_use_path(slug: str) -> Any:
 )
 async def delete_article_use_path(
     slug: str, user: dict = Depends(get_current_user)
-) -> dict:
-    if await check_update_right(slug, user["id"]):
+) -> Any:
+    if await check_update_right(slug, user["id"], is_slug=True):
         result = await delete_article_by_path(slug)
         if result:
-            return {"message": "Article deleted successfully"}
+            return MessageResponse(message= "Article deleted successfully")
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

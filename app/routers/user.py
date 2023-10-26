@@ -1,21 +1,45 @@
-from fastapi import (APIRouter, Body, Depends, Form, HTTPException, Query,
-                     Response, status)
+from fastapi import (
+    APIRouter,
+    Body,
+    Depends,
+    Form,
+    HTTPException,
+    Query,
+    Response,
+    status,
+)
 from typing import Annotated, Any
-
 
 
 # from app.auth import oauth2
 from ..db.helper.article import article_list_by_author, create_article
-from ..db.helper.user import (create_user, delete_user, dynamic_user_search,
-                            find_user, retrieve_user, update_user)
-from ..models.responses import (ArticleListResponseModel, ErrorMessageResponse,
-                              MessageResponse, PostRefrenceResponseModel,
-                              UserListResponseModel, UserResponseModel)
+from ..db.helper.user import (
+    create_user,
+    delete_user,
+    dynamic_user_search,
+    find_user,
+    retrieve_user,
+    update_user,
+)
+from ..models.responses import (
+    ArticleListResponseModel,
+    ArticleResponseModel,
+    ErrorMessageResponse,
+    MessageResponse,
+    PostRefrenceResponseModel,
+    UserListResponseModel,
+    UserResponseModel,
+)
 from ..schemas.articles import CreateArticle
 from ..schemas.response.user import CurrentUser, UserProfileResponse
 from ..schemas.users import UpdateUser, User, UserQuery
-from ..utils.oauth import (create_access_token, create_refresh_token,
-                         get_current_user, hash_password, verify_password)
+from ..utils.oauth import (
+    create_access_token,
+    create_refresh_token,
+    get_current_user,
+    hash_password,
+    verify_password,
+)
 
 router = APIRouter()
 
@@ -113,7 +137,11 @@ async def Publish_new_article(
             detail="Article creation failed",
         )
     else:
-        return PostRefrenceResponseModel(post=result, message="Article created successfully")  # type: ignore
+        print(result)
+        return {
+            "message": "Article created successfully",
+            "post": result,
+        }  
 
 
 # delete my account

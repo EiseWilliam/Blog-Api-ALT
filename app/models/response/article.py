@@ -10,7 +10,7 @@ class ArticleResponse(BaseModel):
     title: str
     slug: str 
     body: str = Body(..., max_length=10000)
-    categories: list 
+    categories: list[str]
     author: str 
     date_published: datetime 
     date_updated: datetime

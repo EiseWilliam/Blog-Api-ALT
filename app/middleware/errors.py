@@ -6,7 +6,9 @@ from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 
 async def error_handler(request: Request, exc: HTTPException) -> JSONResponse:
-    return JSONResponse({"status": "error","message": exc.detail},
+    return JSONResponse({"status": "error",
+                        #  "message": "request failed",
+                         "message": exc.detail},
                         status_code=exc.status_code)
 
 
