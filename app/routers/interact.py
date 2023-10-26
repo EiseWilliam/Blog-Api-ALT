@@ -1,7 +1,5 @@
-from asyncio import streams
 from typing import Annotated, Any
 from fastapi import APIRouter, Depends, HTTPException, status
-from zmq import Message
 
 
 from ..db.helper.interact import like_an_item, remove_like, check_if_user_has_liked
