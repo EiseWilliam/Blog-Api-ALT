@@ -1,5 +1,5 @@
 
-from ..app.db.database import Article, Comment, User
+from app.db.database import Article, Comment, User
 
 
 def clear_user():
