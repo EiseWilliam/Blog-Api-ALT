@@ -1,7 +1,9 @@
 from fastapi.testclient import TestClient
-from app.main import app
-from app.routers import articles
-from test.clear_test_db import clear_user
+
+
+from ..app.main import app
+from ..app.routers import articles
+from .clear_test_db import clear_user
 
 
 client = TestClient(app)
