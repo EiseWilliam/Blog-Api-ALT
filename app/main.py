@@ -7,16 +7,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .middleware.errors import error_handler, http_422_error_handler
 from .db.database import close_db_connection, connect_to_db, client
-from .routers import articles, auth, blog, comments, user, interact
+from .routers import articles, auth, blog, comments, user, interact, admin
 
 app = FastAPI()
 
 origins = [
     "http://localhost:3000",
 ]
-
-
-
 
 
 app.add_middleware(
@@ -33,9 +30,9 @@ app.add_event_handler("shutdown", close_db_connection)
 app.add_exception_handler(HTTPException, error_handler)
 
 
-
 app.include_router(auth.router, tags=['Auth'], prefix='/auth')
 app.include_router(user.router, tags=['User'], prefix='/user')
+app.include_router(admin.router, tags=['Super-user'], prefix='/dashboard')
 # app.include_router(blog.router, tags=['Blog'], prefix='/blog')
 app.include_router(articles.router, tags=['Article'], prefix='/articles')
 app.include_router(comments.router, tags=['Comments'], prefix='/articles')

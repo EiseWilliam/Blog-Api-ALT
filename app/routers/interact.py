@@ -2,7 +2,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 
 
-from ..db.helper.interact import like_an_item, remove_like, check_if_user_has_liked
+from ..db.helper.interact import like_an_item, remove_like, check_if_user_has_liked, users_that_liked_an_item
 from ..models.responses import ErrorMessageResponse, MessageResponse
 from ..utils.oauth import get_current_user
 
@@ -11,9 +11,9 @@ router = APIRouter()
 
 @router.post(
     "/articles/{slug}+",
-    status_code=status.HTTP_202_ACCEPTED,
+    status_code=status.HTTP_200_OK,
     responses={
-        202: {"model": MessageResponse},
+        200: {"model": MessageResponse},
         400: {"model": ErrorMessageResponse},
         401: {"model": ErrorMessageResponse},
         404: {"model": ErrorMessageResponse},
@@ -35,9 +35,9 @@ async def like_article(
 # remove like
 @router.delete(
     "/articles/{slug}-",
-    status_code=status.HTTP_202_ACCEPTED,
+    status_code=status.HTTP_200_OK,
     responses={
-        202: {"model": MessageResponse},
+        200: {"model": MessageResponse},
         400: {"model": ErrorMessageResponse},
         401: {"model": ErrorMessageResponse},
         404: {"model": ErrorMessageResponse},
@@ -54,11 +54,16 @@ async def remove_like_article(
         )
 
 
+@router.get("/articles/{slug}/alllikes", status_code=status.HTTP_200_OK)
+async def get_likes_on_article(slug: str) -> Any:
+    users = await users_that_liked_an_item(slug) 
+    return {"likes": len(users), "liked_by": users}
+    
 @router.post(
-    "comments/{comment}+",
-    status_code=status.HTTP_202_ACCEPTED,
+    "/comments/{comment}+",
+    status_code=status.HTTP_200_OK,
     responses={
-        202: {"model": MessageResponse},
+        200: {"model": MessageResponse},
         400: {"model": ErrorMessageResponse},
         401: {"model": ErrorMessageResponse},
         404: {"model": ErrorMessageResponse},
@@ -77,10 +82,10 @@ async def like_comment(comment: str, user: Annotated[dict, Depends(get_current_u
 
 # remove like on a comment
 @router.delete(
-    "comments/{comment}-",
-    status_code=status.HTTP_202_ACCEPTED,
+    "/comments/{comment}-",
+    status_code=status.HTTP_200_OK,
     responses={
-        202: {"model": MessageResponse},
+        200: {"model": MessageResponse},
         400: {"model": ErrorMessageResponse},
         401: {"model": ErrorMessageResponse},
         404: {"model": ErrorMessageResponse},
@@ -95,6 +100,13 @@ async def remove_like_comment(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="user has not liked this comment",
         )
+
+
+# likes on a comment
+@router.get("/articles/{slug}/{comment_id}", status_code=status.HTTP_200_OK)
+async def get_likes_on_comment(comment_id: str) -> Any:
+    users = await users_that_liked_an_item(comment_id, True) 
+    return {"likes": len(users), "liked_by": users}
 
 
 # check if user has liked item

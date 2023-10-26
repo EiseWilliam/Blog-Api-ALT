@@ -70,6 +70,14 @@ async def post_comment_path(
 
 
 # edit a comment on an article
+# check if user can edit or delete comment
+@router.get("/{slug}/comments/{comment_id}", status_code=status.HTTP_200_OK)
+async def can_edit_or_delete(comment_id: str, user: Annotated[dict, Depends(get_current_user)]) -> bool:
+    if await check_update_right(comment_id, user["id"], True):
+        return True
+    else:
+        return False
+    
 @router.patch(
     "/{slug}/comments/",
     status_code=status.HTTP_200_OK,

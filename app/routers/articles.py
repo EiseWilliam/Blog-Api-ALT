@@ -202,6 +202,14 @@ async def delete_article_by_id(
 
 #
 # Path Operations
+# check if logged in user is the author of the article
+@router.get("/{slug}", status_code=status.HTTP_200_OK) 
+async def can_edit_or_delete(slug: str, user: dict = Depends(get_current_user)) -> bool:
+    if await check_update_right(slug, user["id"], is_slug=True):
+        return True
+    else:
+        return False
+
 @router.patch(
     "/{slug}",
     status_code=status.HTTP_200_OK,

@@ -1,3 +1,4 @@
+from email.policy import HTTP
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -8,6 +9,7 @@ from typing import Annotated
 from ..config.settings import (ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM,
                              JWT_SECRET_KEY, REFRESH_TOKEN_EXPIRE_MINUTES)
 from ..db.helper.article import retrieve_article, retrieve_article_by_slug
+from ..db.database import User
 from ..db.helper.comment import retrieve_comment
 from ..schemas.response.user import CurrentUser
 
@@ -58,6 +60,13 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict:
         )
     return user
 
+
+def is_superuser(user: Annotated [dict, Depends(get_current_user)]) -> bool:
+    user_dict = User.find_one({"_id": user["id"]})
+    if user_dict is not None and user_dict.get("is_superuser") == True:
+        return True
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not an admin user")
 
 
 async def check_update_right(id: str, user_id: str, is_comment: bool = False, is_slug: bool = False) -> dict:
