@@ -5,7 +5,7 @@ alt
 .env
 \env
 __pycache__
-
+.exe
 .gitignore
 # ignore all files of .pyc extension
 *.pyc

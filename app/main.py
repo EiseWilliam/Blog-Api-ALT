@@ -1,7 +1,9 @@
 
-from decouple import config
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 
 
 
@@ -10,6 +12,11 @@ from .db.database import close_db_connection, connect_to_db, client
 from .routers import articles, auth, blog, comments, user, interact, admin
 
 app = FastAPI()
+
+
+templates = Jinja2Templates(directory="src/templates")
+app.mount("/static", StaticFiles(directory="src/static"), name="static")
+
 
 origins = [
     "http://localhost:3000",
@@ -46,6 +53,11 @@ app.include_router(interact.router, tags=['Like'], prefix='/articles')
 def home():
     return {"message": "Welcome to Blog API"}
 
+# create the html index page
+@app.get("/index", response_class=HTMLResponse)
+async def index(request: Request):
+    context = {"request": request}
+    return templates.TemplateResponse("index.html", context)
 
 @app.get("/about")
 def about_page():
