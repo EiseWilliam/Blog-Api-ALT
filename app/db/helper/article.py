@@ -204,7 +204,7 @@ async def get_n_articles(n: int) -> list:
         list: A list of the latest n articles.
     """
     try:
-        articles = list(article for article in Article.find().limit(n))
+        articles = list(article for article in Article.find().sort("date_created", -1).limit(n))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

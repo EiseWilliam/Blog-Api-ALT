@@ -1,7 +1,6 @@
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
@@ -9,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .middleware.errors import error_handler, http_422_error_handler
 from .db.database import close_db_connection, connect_to_db, client
-from .routers import articles, auth, blog, comments, user, interact, admin
+from .routers import articles, auth, blog, comments, user, interact, admin, src, util
 
 app = FastAPI()
 
@@ -40,28 +39,15 @@ app.add_exception_handler(HTTPException, error_handler)
 app.include_router(auth.router, tags=['Auth'], prefix='/auth')
 app.include_router(user.router, tags=['User'], prefix='/user')
 app.include_router(admin.router, tags=['Super-user'], prefix='/dashboard')
-# app.include_router(blog.router, tags=['Blog'], prefix='/blog')
+app.include_router(src.router, tags=['UI'], include_in_schema=False)
 app.include_router(articles.router, tags=['Article'], prefix='/articles')
 app.include_router(comments.router, tags=['Comments'], prefix='/articles')
 app.include_router(interact.router, tags=['Like'], prefix='/articles')
+app.include_router(util.router, tags=['Utility Routes'], prefix='/get')
 
 
 
 
-
-@app.get("/")
-def home():
-    return {"message": "Welcome to Blog API"}
-
-# create the html index page
-@app.get("/index", response_class=HTMLResponse)
-async def index(request: Request):
-    context = {"request": request}
-    return templates.TemplateResponse("index.html", context)
-
-@app.get("/about")
-def about_page():
-    return {"message": "Welcome to Blog API"}
 
 @app.get("/api/test-mongodb-connection", status_code=200)
 async def test_mongodb_connection():

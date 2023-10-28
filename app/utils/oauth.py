@@ -1,5 +1,5 @@
 from email.policy import HTTP
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, requests, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -59,6 +59,18 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict:
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication credentials", headers={"WWW-Authenticate": "Bearer"}
         )
     return user
+
+def get_current_user_optional(token: str| None = None) -> dict | None:
+    if token == None:
+        return None
+    try:
+        user = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
+        if user is None:
+            return None
+    except JWTError:
+        return None
+    return user
+
 
 
 def is_superuser(user: Annotated [dict, Depends(get_current_user)]) -> bool:

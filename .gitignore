@@ -13,7 +13,7 @@ __pycache__
 # ignore all folders named __pycache__ and .vscode
 __pycache__/
 .vscode/
-
+.tailwindcss.exe
 # ignore self
 .gitignore
 # Byte-compiled / optimized / DLL files

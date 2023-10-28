@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto max-w-4xl bg-white rounded-lg shadow-lg">
+    <header class="bg-gray-900 text-white py-8 px-6 rounded-t-lg">
+        <h1 class="text-4xl font-bold">{{ data.title }}</h1>
+        <p class="text-lg">{{ data.date_created }}</p>
+    </header>
+    <section class="p-8">
+        <div class="leading-10">
+            {{ data.body }}
+        </div>
+
+    </section>
+    <section class="p-8 bg-white rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold mb-4">Comments</h2>
+        <div hx-get="http://localhost:8000/articles/{{data.slug}}/comments" 
+        hx-target="#commentsbox"
+        hx-trigger="load"
+        hx-wait="2000"
+        hx-swap="outerHTML"
+        >
+        </div>
+        <div>
+            {%if comments==[] %}
+            <p>No comments yet.</p>
+            {% else %}
+            {% for comment in comments %}
+            <div id="commentsbox" class="bg-gray-100 p-4 rounded-lg shadow-lg mb-4">
+                <p class="text-gray-700">{{ comment.body }}</p>
+                <p class="text-gray-500 text-sm mb-2">By <a href="#" class="text-blue-500 hover:text-blue-700">{{
+                        comment.author }}</a> on {{ comment.date_published.strftime('%Y-%m-%d') }}</p>
+
+            </div>
+            {% endfor %}
+            {% endif %}
+            <form hx-post="http://localhost:8000/articles/{{data.slug}}/comments" hx-trigger="submit">
+                <div class="mt-6">
+                    <label for="comment" class="block text-sm font-medium text-gray-700">Comment</label>
+                    <div class="mt-1">
+                        <textarea id="comment" name="comment" rows="3"
+                            class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"></textarea>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <button type="submit"
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
+                        Comment
+                    </button>
+                </div>
+            </form>
+    </section>
+</div>
+{% endblock %}

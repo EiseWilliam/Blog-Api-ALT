@@ -70,6 +70,7 @@ async def show_profile(user: Annotated[dict, Depends(get_current_user)]) -> Any:
     return UserResponseModel(user=profile, message="User profile retrieved successfully")  # type: ignore
 
 
+    
 # update user profile
 @router.patch(
     "/",
@@ -184,3 +185,9 @@ async def search_user_by_mail_or_username(
         return UserListResponseModel(users=users, message="Users found successfully")  # type: ignore
     else:
         return UserListResponseModel(users=[], message="No users found")
+
+
+@router.get("/{user_id}", response_model=UserResponseModel, response_description="User profile retrieved successfully")
+async def get_user_details(user_id: str) -> Any:
+    details = retrieve_user(user_id)
+    return UserResponseModel(user=details, message="User profile retrieved successfully") # type: ignore

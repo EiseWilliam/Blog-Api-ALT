@@ -27,15 +27,15 @@ def full_profile_entity(user) -> UserProfileResponse | dict:
 
     
 def user_entity(user) -> dict:
-    return {
-        "id": str(user.get("_id")),
-        "username": user.get("username"),
-        "email": user.get("email"),
-        "password": user.get("password"),
-        "profile": user.get("profile"),
-        "date_created": user.get("date_created"),
-        "date_updated": user.get("date_updated"),
-    }
+        return {
+            "id": str(user.get("_id")),
+            "username": user.get("username"),
+            "email": user.get("email"),
+            "password": user.get("password"),
+            "profile": user.get("profile"),
+            "date_created": user.get("date_created"),
+            "date_updated": user.get("date_updated"),
+        }
 
 
 async def user_list_entity(users) -> list[dict]:

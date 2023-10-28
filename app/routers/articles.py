@@ -260,6 +260,20 @@ async def get_article_use_path(slug: str) -> Any:
         )
 
 
+# get full article view
+@router.get(
+    "/{slug}/read",
+    status_code=status.HTTP_200_OK,
+    responses={
+        200: {"model": ArticleResponseModel},
+        404: {"model": ErrorMessageResponse},
+    },
+)
+async def get_full_article(slug: str) -> Any:
+    article = await retrieve_article_by_slug(slug)
+    if article:
+        return ArticleResponseModel(article=article, message="Article retrieved successfully")
+
 @router.delete(
     "/{slug}",
     status_code=status.HTTP_200_OK,
@@ -267,7 +281,6 @@ async def get_article_use_path(slug: str) -> Any:
         200: {"model": MessageResponse},
         401: {"model": ErrorMessageResponse},
         404: {"model": ErrorMessageResponse},
-        500: {"model": ErrorMessageResponse},
     },
 )
 async def delete_article_use_path(
