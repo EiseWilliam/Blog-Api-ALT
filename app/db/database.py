@@ -1,7 +1,9 @@
 from pymongo import ASCENDING, MongoClient
 from pymongo.server_api import ServerApi
+from decouple import config
 
 URI = "mongodb://localhost:27017/"
+# URI = config("DB_URL")
 
   # Set the Stable API version when creating a new client
 client = MongoClient(URI, server_api=ServerApi('1'))

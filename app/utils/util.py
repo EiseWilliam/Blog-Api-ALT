@@ -87,7 +87,7 @@ def render(request: Request, template_name:str, data: dict[str, Any]={}, status_
     return response
 
 
-def compile_context(request:Request, data:dict[str, Any]={}) :
+def compile_context(request:Request, data:dict[str, Any]={}, **kwargs) :
     access_token = request.cookies.get("access_token")
     logged_in = request.cookies.get("logged_in")
     current = get_current_user_optional(access_token)
@@ -97,6 +97,7 @@ def compile_context(request:Request, data:dict[str, Any]={}) :
         "access_token": access_token,
         "logged_in": logged_in,
         "user": current,
+        "page" : kwargs.get("page"),
     }
     return context
 

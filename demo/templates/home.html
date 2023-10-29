@@ -1,0 +1,72 @@
+{% extends "base.html" %} {% block content %} {% include 'components/tags.html'
+%}
+
+<div class="flex flex-row">
+  <div class="w-1/5 px-30">
+    <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl">
+      Trending Articles
+    </h1>
+  </div>
+  <div class="flex flex-col w-10/12 justify-self-end bg-gray-800">
+    <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl" style="margin-left: 20px">
+      LATEST ARTICLES
+    </h1>
+    <section class="w-full flex flex-col items-center px-3">
+      <ul class="space-y-4 w-full">
+
+        {% for post in data %}
+        <li class="min-w-full w-max">
+
+          <article class="flex flex-col shadow my-4 w-full">
+            <!-- Article Image -->
+            <div class="hover:opacity-75">
+              <div class="bg-slate-800 h-60 w-auto"></div>
+            </div>
+            <div class="bg-white flex flex-col justify-start p-6">
+              <div>
+                {% for category in post.categories %}
+                <a href="#" class="text-blue-700 text-sm font-bold capitalize pb-4">{{ category }}</a>
+                {% endfor %}
+              </div>
+
+              <h1 href="#"
+                class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl">
+                <a href="#">{{post.title}}</a>
+              </h1>
+              <p href="#" class="text-sm pb-3">
+                By
+                <a href="#" class="font-semibold hover:text-gray-800">{{post.author.username}}</a>, Published on {{
+                post.date_published.strftime('%Y-%m-%d') }}
+              </p>
+              <a href="#"
+                class="p-0 m-10 mb-6 text-lg font-normal text-gray-500 lg:text-xl  dark:text-gray-400">{{post.body|truncate(400)}}..</a>
+              <div class="pb-6 text-right">
+                <a href="blog/{{post.slug}}"
+                  class="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900">Continue
+                  Reading <svg class="w-3.5 h-3.5 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                    fill="none" viewBox="0 0 14 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M1 5h12m0 0L9 1m4 4L9 9" />
+                  </svg></a>
+              </div>
+          </article>
+          {% endfor %}
+        </li>
+      </ul>
+    </section>
+    <div class="flex justify-center">
+      {% if page > 1 %}
+      <a href="?page={{ page-1 }}"
+        class="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900">
+        Previous
+      </a>
+      {% endif %}
+      <a href="?page={{ page+1 }}"
+        class="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900">
+        Next
+      </a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -4,10 +4,12 @@ from datetime import datetime
 from bson import ObjectId
 from fastapi import HTTPException, status
 
+from app.db.pipelines import comment_pipeline
+
 
 
 from ..database import Comment
-from ..serializer import comment_entity, comment_list_entity
+from ..serializer import comment_entity, comment_entity_lite, comment_list_entity
 from ...schemas.comments import CreateComment
 
 
@@ -17,13 +19,13 @@ async def add_comment(comment: CreateComment, user_id: str, slug: str) -> str:
     comment_data["article"] = slug
     comment_data["date_posted"] = datetime.now()
     comment_data["date_updated"] = comment_data["date_posted"]
-    try:
         # Insert the user data into the collection
+    try:
         result = Comment.insert_one(comment_data)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"failure to create comment,DB error; {str(e)}",
+            detail=f"failure to create comment, DB error; {str(e)}",
         )
     return str(result.inserted_id)
 
@@ -31,19 +33,13 @@ async def add_comment(comment: CreateComment, user_id: str, slug: str) -> str:
 async def update_comment(id: str, comment_details: CreateComment) -> bool:
     article_data = comment_details.model_dump(exclude_unset=True)
     article_data["date_updated"] = datetime.now()
-    try:
-        result =  Comment.update_one({"_id": ObjectId(id)}, {"$set": article_data})
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"failure to update comment,DB error; {str(e)}",
-        )
+    result =  Comment.update_one({"_id": ObjectId(id)}, {"$set": article_data})
     return result.acknowledged
 
-async def retrieve_comment(comment_id: str) -> dict:
+async def retrieve_comment(comment_id: str) -> dict | None:
     comment = Comment.find_one({"_id": ObjectId(comment_id)})
     if comment:
-        return comment_entity(comment)
+        return comment_entity_lite(comment)
 
 
 async def delete_comment(comment_id: str) -> bool:
@@ -63,7 +59,7 @@ async def delete_comment(comment_id: str) -> bool:
 # retreive comments on article
 
 async def get_comments_on_article(slug) -> list:
-    articles = list(comment for comment in Comment.find({"article": slug}))
-    comments = await comment_list_entity(articles)
+    comments = list(comment for comment in Comment.aggregate(comment_pipeline(slug)))
+    comments = await comment_list_entity(comments)
     return comments
 

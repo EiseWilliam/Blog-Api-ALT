@@ -1,4 +1,5 @@
 from email.policy import HTTP
+from bson import ObjectId
 from fastapi import Depends, HTTPException, requests, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -27,7 +28,7 @@ def verify_password(password: str, hashed_pass: str) -> bool:
     return pwd_context.verify(password, hashed_pass)
 
 
-def create_access_token(_id: str,email: str, expires_delta: int | None = None) -> str:
+def create_access_token(_id: str,email: str, expires_delta: timedelta | None = None) -> str:
     if expires_delta is not None:
         expire_time = datetime.utcnow() + expires_delta
     else:
@@ -37,7 +38,7 @@ def create_access_token(_id: str,email: str, expires_delta: int | None = None) -
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm=ALGORITHM);
      
 
-def create_refresh_token(_id: str, email: str, expires_delta: int | None = None) -> str:
+def create_refresh_token(_id: str, email: str, expires_delta: timedelta | None = None) -> str:
     if expires_delta is not None:
         expire_time = datetime.utcnow() + expires_delta
     else:
@@ -89,14 +90,15 @@ async def check_update_right(id: str, user_id: str, is_comment: bool = False, is
             case True:
                 item = await retrieve_article_by_slug(id)
             case False:
-                item = await retrieve_article(id)
+                item = await retrieve_article(ObjectId(id))
+
     if not item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"{'Comment' if is_comment else 'Article'} not found"
         )
 
-    if item["author"] != user_id:
+    if item["author"]["id"] != user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"You are not authorized to update this {'comment' if is_comment else 'article'}"

@@ -1,5 +1,4 @@
 from typing import Iterable
-
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
@@ -12,7 +11,7 @@ async def error_handler(request: Request, exc: HTTPException) -> JSONResponse:
                         status_code=exc.status_code)
 
 
-async def http_422_error_handler(request: Request, exc: HTTPException) -> JSONResponse:
+async def pydantic_handler(request: Request, exc: HTTPException) -> JSONResponse:
     """
     Handler for 422 error to transform default pydantic error object to gothinkster format
     """
@@ -29,5 +28,8 @@ async def http_422_error_handler(request: Request, exc: HTTPException) -> JSONRe
             errors["body"].append({error_name: error["msg"]})
     else:
         errors["body"].append(exc.detail)
-
+        
+        
+    with open("log.txt", "a") as f:
+        f.write(str(errors) + "\n")
     return JSONResponse({"errors": errors}, status_code=HTTP_422_UNPROCESSABLE_ENTITY)

@@ -5,10 +5,19 @@ from datetime import datetime
 from typing import Any
 from fastapi import HTTPException, status
 
+from app.db.pipelines import article_pipeline
+
+
 from ...schemas.articles import CreateArticle, UpdateArticle
 from ..database import Article, Comment, User
-from ..serializer import (article_entity, article_list_entity, comment_entity,
-                           user_entity)
+from ..serializer import (
+    article_entity,
+    article_entity_lite,
+    article_list_entity,
+    article_list_entity_lite,
+    comment_entity,
+    user_entity,
+)
 
 
 def slugify(string):
@@ -20,14 +29,21 @@ def slugify(string):
         >>> slugify(u"Héllø Wörld")
         u"hello-world"
     """
-    return re.sub(r'[-\s]+', '-',
-            str(
-                re.sub(r'[^\w\s-]', '',
-                    unicodedata.normalize('NFKD', string)
-                    .encode('ascii', 'ignore')
-                    .decode())
-                .strip()
-                .lower()))
+    return re.sub(
+        r"[-\s]+",
+        "-",
+        str(
+            re.sub(
+                r"[^\w\s-]",
+                "",
+                unicodedata.normalize("NFKD", string)
+                .encode("ascii", "ignore")
+                .decode(),
+            )
+            .strip()
+            .lower()
+        ),
+    )
 
 
 async def unique_slug_id(title: str) -> str:
@@ -37,7 +53,7 @@ async def unique_slug_id(title: str) -> str:
     """
     slug = slugify(title)
     # Check if the slug already exists in the database
-    matches: int =  Article.count_documents({"slug": slug})
+    matches: int = Article.count_documents({"slug": slug})
     if matches > 0:
         # Append a number to the end of the slug until it is unique
         count = 1
@@ -79,8 +95,7 @@ async def create_article(article_data: CreateArticle, user: dict) -> dict[str, s
             detail=f"failure to create article,DB error; {str(e)}",
         )
     # Check if the insertion was successful
-    return {"id": str(result.inserted_id),
-            "article_path": article["slug"]}
+    return {"id": str(result.inserted_id), "article_path": article["slug"]}
 
 
 async def update_article(id: str, article_details: UpdateArticle) -> Any:
@@ -97,14 +112,14 @@ async def update_article(id: str, article_details: UpdateArticle) -> Any:
     article_data = article_details.model_dump(exclude_unset=True)
     article_data["date_updated"] = datetime.now()
     try:
-        result =  Article.update_one({"_id": ObjectId(id)}, {"$set": article_data})
+        result = Article.update_one({"_id": ObjectId(id)}, {"$set": article_data})
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"failure to update article,DB error; {str(e)}",
         )
     if result.acknowledged:
-        return article_entity(Article.find_one({"_id": ObjectId(id)}))  # type: ignore
+        return article_entity_lite(Article.find_one({"_id": ObjectId(id)}))  # type: ignore
 
 
 async def update_article_slug(slug: str, article_details: UpdateArticle) -> dict | None:
@@ -121,15 +136,14 @@ async def update_article_slug(slug: str, article_details: UpdateArticle) -> dict
     article_data = article_details.model_dump(exclude_unset=True)
     article_data["date_updated"] = datetime.now()
     try:
-        result =  Article.update_one({"slug": slug}, {"$set": article_data})
+        result = Article.update_one({"slug": slug}, {"$set": article_data})
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"failure to update article,DB error; {str(e)}",
         )
     if result.acknowledged:
-        return article_entity(Article.find_one({"slug": slug}))  # type: ignore
-
+        return article_entity_lite(Article.find_one({"slug": slug})) 
 
 async def retrieve_article_by_slug(slug_id: str) -> dict | None:
     """
@@ -142,7 +156,8 @@ async def retrieve_article_by_slug(slug_id: str) -> dict | None:
         dict: The retrieved article data.
     """
     try:
-        article = Article.find_one({"slug": slug_id})
+        # next() to get the result from the cursor
+        article = next(Article.aggregate(article_pipeline(slug=slug_id,is_slug=True)))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -181,7 +196,7 @@ async def retrieve_article(article_id: str) -> dict | None:
         dict | None: The retrieved article data or None if the article was not found.
     """
     try:
-        article = Article.find_one({"_id": ObjectId(article_id)})
+        article = next(Article.aggregate(article_pipeline(article_id=article_id)))
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -193,7 +208,9 @@ async def retrieve_article(article_id: str) -> dict | None:
         return None
 
 
-async def get_n_articles(n: int) -> list:
+async def get_n_articles(
+    page: int | None = None, page_size: int | None = None, sort_by: str | None = None, tags: str | None = None
+) -> list:
     """
     Retrieves a list of the latest n articles from the database.
 
@@ -204,7 +221,12 @@ async def get_n_articles(n: int) -> list:
         list: A list of the latest n articles.
     """
     try:
-        articles = list(article for article in Article.find().sort("date_created", -1).limit(n))
+        articles = list(
+            article
+            for article in Article.aggregate(
+                article_pipeline(sort_by=sort_by, page=page, page_size=page_size, tag=tags)
+            )
+        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -231,8 +253,8 @@ async def article_list_by_author(user_id) -> list:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"failure to retrieve articles,DB error; {str(e)}",
         )
-    list_ = await article_list_entity(articles)
-    return list_
+    article_by_author = await article_list_entity_lite(articles)
+    return article_by_author
 
 
 async def delete_article(article_id: str):
@@ -247,7 +269,8 @@ async def delete_article(article_id: str):
             )
         else:
             return True
-        
+
+
 async def delete_article_by_path(slug_id: str):
     article = Article.find_one({"slug": slug_id})
     if article:
@@ -260,7 +283,7 @@ async def delete_article_by_path(slug_id: str):
             )
         else:
             return True
-        
-async def dynamic_article_search(query, category=None ):
+
+
+async def dynamic_article_search(query, category=None):
     pass
-    

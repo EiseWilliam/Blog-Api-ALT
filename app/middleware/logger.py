@@ -1,44 +1,24 @@
-import logging
-import time
+import sys
+import uvicorn
+from fastapi import FastAPI, Request
+from loguru import logger
+from starlette.routing import Match
+logger.remove()
+logger.add(sys.stdout, colorize=True, format="{time:HH:mm:ss} | {level} | {message}")
+from main import app
 
-from fastapi import Request, Response
-from fastapi.routing import APIRoute
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-# create file handler which logs even debug messages
-fh = logging.FileHandler('app.log')
-fh.setLevel(logging.DEBUG)
-
-# create console handler with a higher log level
-ch = logging.StreamHandler()
-ch.setLevel(logging.ERROR)
-
-# create formatter and add it to the handlers
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-
-# add the handlers to the logger
-logger.addHandler(fh)
-logger.addHandler(ch)
-
-
-class CustomAPIRoute(APIRoute):
-    async def get_route_handler(self):
-        original_route_handler = await super().get_route_handler()
-
-        async def custom_route_handler(request: Request) -> Response:
-            before = time.time()
-            response: Response = await original_route_handler(request)
-            duration = time.time() - before
-            response.headers["X-Response-Time"] = str(duration)
-            logger.info(f"route duration: {duration}")
-            logger.info(f"route response: {response}")
-            logger.info(f"route response headers: {response.headers}")
-            return response
-
-        return custom_route_handler
-    
-
+@app.middleware("http")
+async def log_middle(request: Request, call_next):
+    logger.debug(f"{request.method} {request.url}")
+    routes = request.app.router.routes
+    logger.debug("Params:")
+    for route in routes:
+        match, scope = route.matches(request)
+        if match == Match.FULL:
+            for name, value in scope["path_params"].items():
+                logger.debug(f"\t{name}: {value}")
+    logger.debug("Headers:")
+    for name, value in request.headers.items():
+        logger.debug(f"\t{name}: {value}")
+    response = await call_next(request)
+    return response

@@ -2,6 +2,8 @@
 from typing import Annotated, Any
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 
+from app.routers.comments import get_article_comments
+
 
 from ..models.responses import (
     ArticleListResponseModel,
@@ -9,6 +11,7 @@ from ..models.responses import (
     ErrorMessageResponse,
     MessageResponse,
     PostRefrenceResponseModel,
+    ViewArticleResponseModel,
 )
 from ..schemas.articles import CreateArticle, UpdateArticle
 from ..utils.oauth import check_update_right, get_current_user
@@ -33,28 +36,55 @@ router = APIRouter()
 @router.get(
     "/all",
     status_code=status.HTTP_200_OK,
-    responses={
-        200: {"model": ArticleListResponseModel},
-        500: {"model": ErrorMessageResponse},
-    },
+    response_model=ArticleListResponseModel,
 )
-async def get_all_articles(n: int = 10) -> Any:
-    list = await get_n_articles(n)
+async def get_all_articles(page: int = 1,page_size: int = 10, sort_by: str | None = None, tags: str | None = None) -> Any:
+    list = await get_n_articles(page,page_size,sort_by, tags)
     if list:
-        return ArticleListResponseModel(
-            articles=list, message=f"{len(list)} Articles retrieved successfully"
-        )
+        return ArticleListResponseModel(articles=list,message=f"{len(list)} Articles retrieved successfully")
     else:
         return ArticleListResponseModel(articles=[], message="No Articles yet")
 
+@router.get(
+    "/{slug}/get",
+    status_code=status.HTTP_200_OK,
+    responses={
+        200: {"model": ArticleResponseModel},
+        404: {"model": ErrorMessageResponse},
+    },
+)
+async def get_article_use_path(slug: str) -> Any:
+    article = await retrieve_article_by_slug(slug)
+    if article:
+        return ArticleResponseModel(article=article, message="Article retrieved successfully")  # type: ignore
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Article not found"
+        )
+
+
+@router.get(
+    "/{slug}/read",
+    status_code=status.HTTP_200_OK,
+    responses={
+        200: {"model": ViewArticleResponseModel},
+        404: {"model": ErrorMessageResponse},
+    },
+)
+async def get_full_article(slug: str) -> Any:
+    article = await retrieve_article_by_slug(slug)
+    comments = await get_article_comments(slug)
+    if article:
+        return {"status": "success",
+                "message": "Article retrieved successfully",
+                "article": article,
+                "comments": comments}
+        
 
 @router.get(
     "/{user_id}/articles",
     status_code=status.HTTP_200_OK,
-    responses={
-        200: {"model": ArticleListResponseModel},
-        500: {"model": ErrorMessageResponse},
-    },
+    response_model=ArticleListResponseModel,
 )
 async def get_articles_by_author(user_id: str) -> Any:
     articles = await article_list_by_author(user_id)
@@ -73,7 +103,6 @@ async def get_articles_by_author(user_id: str) -> Any:
     responses={
         200: {"model": ArticleResponseModel},
         404: {"model": ErrorMessageResponse},
-        500: {"model": ErrorMessageResponse},
     },
 )
 async def get_article_by_id(article_id: str) -> Any:
@@ -86,6 +115,7 @@ async def get_article_by_id(article_id: str) -> Any:
         )
 
 
+
 @router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
@@ -93,7 +123,6 @@ async def get_article_by_id(article_id: str) -> Any:
         201: {"model": PostRefrenceResponseModel},
         401: {"model": ErrorMessageResponse},
         404: {"model": ErrorMessageResponse},
-        500: {"model": ErrorMessageResponse},
     },
 )
 async def Publish_new_article(
@@ -120,7 +149,6 @@ async def Publish_new_article(
         200: {"model": ArticleResponseModel},
         401: {"model": ErrorMessageResponse},
         404: {"model": ErrorMessageResponse},
-        500: {"model": ErrorMessageResponse},
     },
 )
 async def edit_article_by_id(
@@ -157,59 +185,6 @@ async def edit_article_by_id(
             detail="Only the Author can edit this article",
         )
 
-
-@router.delete(
-    "/",
-    status_code=status.HTTP_200_OK,
-    responses={
-        200: {"model": MessageResponse},
-        401: {"model": ErrorMessageResponse},
-        404: {"model": ErrorMessageResponse},
-        500: {"model": ErrorMessageResponse},
-    },
-)
-async def delete_article_by_id(
-    article_id: str, user: dict = Depends(get_current_user)
-) -> Any:
-    """
-    Delete an article with the given article_id.
-
-    Args:
-        article_id (str): The ID of the article to be deleted.
-        user (bool): The current user making the request.
-
-    Returns:
-        dict: A dictionary containing a success message.
-
-    Raises:
-        HTTPException: If the user is not authorized to delete the article or if the deletion fails.
-    """
-    if await check_update_right(article_id, user["id"]):
-        result = await delete_article(article_id)
-        if result:
-            return MessageResponse(message= "Article deleted successfully")
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Article delete failed",
-            )
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Only the Author can delete this article",
-        )
-
-
-#
-# Path Operations
-# check if logged in user is the author of the article
-@router.get("/{slug}", status_code=status.HTTP_200_OK) 
-async def can_edit_or_delete(slug: str, user: dict = Depends(get_current_user)) -> bool:
-    if await check_update_right(slug, user["id"], is_slug=True):
-        return True
-    else:
-        return False
-
 @router.patch(
     "/{slug}",
     status_code=status.HTTP_200_OK,
@@ -217,7 +192,6 @@ async def can_edit_or_delete(slug: str, user: dict = Depends(get_current_user)) 
         200: {"model": ArticleResponseModel},
         401: {"model": ErrorMessageResponse},
         404: {"model": ErrorMessageResponse},
-        500: {"model": ErrorMessageResponse},
     },
 )
 async def edit_article_use_path(
@@ -241,39 +215,6 @@ async def edit_article_use_path(
         )
 
 
-@router.get(
-    "/{slug}s",
-    status_code=status.HTTP_200_OK,
-    responses={
-        200: {"model": ArticleResponseModel},
-        404: {"model": ErrorMessageResponse},
-        500: {"model": ErrorMessageResponse},
-    },
-)
-async def get_article_use_path(slug: str) -> Any:
-    article = await retrieve_article_by_slug(slug)
-    if article:
-        return ArticleResponseModel(article=article, message="Article retrieved successfully")  # type: ignore
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Article not found"
-        )
-
-
-# get full article view
-@router.get(
-    "/{slug}/read",
-    status_code=status.HTTP_200_OK,
-    responses={
-        200: {"model": ArticleResponseModel},
-        404: {"model": ErrorMessageResponse},
-    },
-)
-async def get_full_article(slug: str) -> Any:
-    article = await retrieve_article_by_slug(slug)
-    if article:
-        return ArticleResponseModel(article=article, message="Article retrieved successfully")
-
 @router.delete(
     "/{slug}",
     status_code=status.HTTP_200_OK,
@@ -288,6 +229,46 @@ async def delete_article_use_path(
 ) -> Any:
     if await check_update_right(slug, user["id"], is_slug=True):
         result = await delete_article_by_path(slug)
+        if result:
+            return MessageResponse(message= "Article deleted successfully")
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Article delete failed",
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Only the Author can delete this article",
+        )
+
+@router.delete(
+    "/",
+    status_code=status.HTTP_200_OK,
+    responses={
+        200: {"model": MessageResponse},
+        401: {"model": ErrorMessageResponse},
+        404: {"model": ErrorMessageResponse},
+    },
+)
+async def delete_article_by_id(
+    article_id: str, user: dict = Depends(get_current_user)
+) -> Any:
+    """
+    Delete an article with the given article_id.
+
+    Args:
+        article_id (str): The ID of the article to be deleted.
+        user (bool): The current user making the request.
+
+    Returns:
+        dict: A dictionary containing a success message.
+
+    Raises:
+        HTTPException: If the user is not authorized to delete the article or if the deletion fails.
+    """
+    if await check_update_right(article_id, user["id"]):
+        result = await delete_article(article_id)
         if result:
             return MessageResponse(message= "Article deleted successfully")
         else:

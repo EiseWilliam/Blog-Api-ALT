@@ -1,0 +1,28 @@
+/* set all global properties like viewport to keep the stability of the web */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* disable horizontal overflow */
+body {
+  overflow-x: hidden;
+  margin: 0;
+  font-family: "EuclidCircularA", sans-serif;
+  font-weight: 300;
+  color: #000;
+  font-size: 1rem;
+  line-height: 1.5;
+  text-align: left;
+  background-color: #fff;
+}
+
+/* set the viewport */
+html {
+  font-size: 75%;
+  scroll-behavior: smooth;
+  border: #fff;
+}
+

@@ -1,0 +1,71 @@
+{% extends "base.html" %} 
+
+{% block content %}
+    <section class="max-w-screen-2xl flex flex-col items-center px-60 mx-auto">
+        <article class="flex flex-col shadow my-4">
+            <!-- Article Image -->
+            <a href="#">
+                <img src="https://source.unsplash.com/collection/1346951/1000x500?sig=1" />
+            </a>
+            <div class="bg-white flex flex-col justify-start p-6">
+                <a href="#" class="text-blue-700 text-sm font-bold uppercase pb-4">{{ data.article.categories | join(", ") }}</a>
+                <a href="#" class="text-3xl font-bold hover:text-gray-700 pb-4">{{data.article.title}}</a>
+                <p href="#" class="text-sm pb-8">
+                    By <a href="#" class="font-semibold hover:text-gray-800">{{data.article.author.username}}</a>, Published on {{data.article.date_published.strftime('%Y-%m-%d')}}
+                </p>
+                <div>{{data.article.body}}</div>
+            </div>
+        </article>
+
+        <div class="w-full flex pt-6"></div>
+
+        <div class="w-full flex flex-col text-center md:text-left md:flex-row shadow bg-white mt-10 mb-10 p-6">
+            <div class="w-full md:w-1/5 flex justify-center md:justify-start pb-4">
+                {% if data.article.author.profile == None %}
+                    <img src="https://source.unsplash.com/collection/1346951/150x150?sig=1" class="rounded-full shadow h-32 w-32" />
+                {% else %}
+                    <img src="{{data.article.author.profile.photo}}" class="rounded-full shadow h-32 w-32" />
+                {% endif %}
+            </div>
+            <div class="flex-1 flex flex-col justify-center md:justify-start">
+                <h2 class="font-semibold text-2xl">About Author</h2>
+                <div class="pt-2 flex flex-col">
+                    <a href="#">{{data.article.author.username}}</a>
+                </div>
+                <p class="pt-2">
+                    {% if data.article.author.profile == None %} Has not setup profile {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Comment Section -->
+        <div class="w-full mx-auto mt-10">
+            <h2 class="text-2xl font-semibold">Comments</h2>
+            <div id="comments" class="mt-4 space-y-4" hx-get="/comments">
+                {% for comment in data.comments.comments %}
+                    <div class="bg-white rounded-lg shadow-md p-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-lg font-semibold">{{ comment.author.username }}</h4>
+                            <span class="text-sm text-gray-500">{{ comment.date_posted.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                        <p class="mt-2">{{ comment.content }}</p>
+                        {% if comment.date_posted != comment.date_updated %}
+                            <span class="text-xs text-gray-500">edited</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-6">
+                <h3 class="text-xl font-semibold">Leave a Comment</h3>
+                <form id="comment-form" hx-post="/add-comment" class="mt-4 space-y-4">
+                    <div>
+                        <label for="content" class="block text-gray-600">Comment:</label>
+                        <textarea id="comment" name="content" rows="4" class="w-full border rounded p-2"></textarea>
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Post Comment</button>
+                </form>
+            </div>
+        </div>
+    </section>
+{% endblock %}

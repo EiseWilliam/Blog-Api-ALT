@@ -21,7 +21,7 @@ router = APIRouter()
     status_code=status.HTTP_200_OK,
     response_model=CommentListResponseModel,
 )
-async def get_comments(slug: str) -> Any:
+async def get_article_comments(slug: str) -> Any:
     comments = await get_comments_on_article(slug)
     if comments:
         return CommentListResponseModel(
@@ -38,6 +38,13 @@ async def get_comments(slug: str) -> Any:
         message=f"no comments on article '{slug}' yet, become the first", comments=[]
     )
 
+# check if user can edit or delete comment
+@router.get("/{slug}/comments/{comment_id}", status_code=status.HTTP_200_OK)
+async def can_edit_or_delete(comment_id: str, user: Annotated[dict, Depends(get_current_user)]) -> bool:
+    if await check_update_right(comment_id, user["id"], True):
+        return True
+    else:
+        return False
 
 # comment on an article
 @router.post(
@@ -67,34 +74,26 @@ async def post_comment_path(
         status_code=status.HTTP_404_NOT_FOUND,
         detail="article not found",
     )
-
-
-# edit a comment on an article
-# check if user can edit or delete comment
-@router.get("/{slug}/comments/{comment_id}", status_code=status.HTTP_200_OK)
-async def can_edit_or_delete(comment_id: str, user: Annotated[dict, Depends(get_current_user)]) -> bool:
-    if await check_update_right(comment_id, user["id"], True):
-        return True
-    else:
-        return False
     
+    
+# edit a comment on an article
 @router.patch(
     "/{slug}/comments/",
     status_code=status.HTTP_200_OK,
     response_model=PostRefrenceResponseModel,
 )
 async def edit_comment_path(
-    slug: str,
     comment_id: str,
     comment: Annotated[CreateComment, Body(...)],
     user: Annotated[dict, Depends(get_current_user)],
 ) -> Any:
-    if await check_update_right(comment_id, user["id"], True):
+    comment_check = await check_update_right(comment_id, user["id"], True)
+    if comment_check:
         result = await update_comment(comment_id, comment)
         if result == True:
             return PostRefrenceResponseModel(
                 message="Comment updated successfully",
-                post={"id": comment_id, "article": slug},
+                post={"id": comment_id, "article": comment_check["article"]},
             )
         else:
             raise HTTPException(

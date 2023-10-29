@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from app.routers import comments
+
 
 from .response.article import ArticleResponse
 from .response.comment import CommentResponse
@@ -20,7 +22,11 @@ class ArticleResponseModel(BaseModel):
     status: str = "success"
     message: str = "article retrieved successfully"
     article: ArticleResponse
-    
+class ViewArticleResponseModel(BaseModel):
+    status: str = "success"
+    message: str = "article retrieved successfully"
+    article: ArticleResponse
+    comments: list[CommentResponse]
 class ArticleListResponseModel(BaseModel):
     status: str = "success"
     message: str = "n articles retrieved successfully"

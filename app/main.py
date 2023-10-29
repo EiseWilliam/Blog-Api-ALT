@@ -6,15 +6,15 @@ from fastapi.staticfiles import StaticFiles
 
 
 
-from .middleware.errors import error_handler, http_422_error_handler
+from .middleware.errors import error_handler, pydantic_handler
 from .db.database import close_db_connection, connect_to_db, client
-from .routers import articles, auth, blog, comments, user, interact, admin, src, util
+from .routers import articles, auth, blog, comments, user, interact, admin, demo, util
 
 app = FastAPI()
 
 
-templates = Jinja2Templates(directory="src/templates")
-app.mount("/static", StaticFiles(directory="src/static"), name="static")
+templates = Jinja2Templates(directory="demo/templates")
+app.mount("/static", StaticFiles(directory="demo/static"), name="static")
 
 
 origins = [
@@ -38,14 +38,14 @@ app.add_exception_handler(HTTPException, error_handler)
 
 app.include_router(auth.router, tags=['Auth'], prefix='/auth')
 app.include_router(user.router, tags=['User'], prefix='/user')
-app.include_router(admin.router, tags=['Super-user'], prefix='/dashboard')
-app.include_router(src.router, tags=['UI'], include_in_schema=False)
+app.include_router(admin.router, tags=['Super-user (under construction)'], prefix='/dashboard')
 app.include_router(articles.router, tags=['Article'], prefix='/articles')
 app.include_router(comments.router, tags=['Comments'], prefix='/articles')
 app.include_router(interact.router, tags=['Like'], prefix='/articles')
 app.include_router(util.router, tags=['Utility Routes'], prefix='/get')
 
 
+app.include_router(demo.router, tags=['Demo'], include_in_schema=False)
 
 
 

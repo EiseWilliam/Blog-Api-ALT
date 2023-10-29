@@ -1,4 +1,5 @@
 from datetime import datetime
+from bson import ObjectId
 from fastapi import status
 from fastapi import HTTPException
 
@@ -6,7 +7,7 @@ from fastapi import HTTPException
 from ..database import Article, Comment, Like
 
 
-def check_if_item_exists(item: str, is_comment: bool = False, is_slug: bool = True) -> bool:
+def check_if_item_exists(item: str, is_comment: bool = False, is_slug: bool = False) -> bool:
     """
     Check if an item exists in the database.
 
@@ -20,7 +21,7 @@ def check_if_item_exists(item: str, is_comment: bool = False, is_slug: bool = Tr
     """
     match is_comment:
         case True:
-            info = Comment.find_one({"_id": item})
+            info = Comment.find_one({"_id": ObjectId(item)})
             return info is not None
         case False:
             if is_slug:
@@ -97,7 +98,7 @@ async def like_an_item(item: str, user: str, is_comment: bool = False) -> bool:
     if await check_if_user_has_liked(item, user, is_comment):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="User has already liked this item",
+            detail=f"User has already liked this {'Comment' if is_comment else 'Article'}",
         )
     try:
         insert = Like.insert_one(
@@ -105,12 +106,12 @@ async def like_an_item(item: str, user: str, is_comment: bool = False) -> bool:
         )
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=f"DB error, {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"DB error, {str(e)}"
         )
     return insert.acknowledged
 
 
-async def remove_like(item: str, user: str, is_comment: bool = True) -> bool:
+async def remove_like(item: str, user: str, is_comment: bool = False) -> bool:
     """
     Removes a like from the database for a given item and user.
 
@@ -133,7 +134,7 @@ async def remove_like(item: str, user: str, is_comment: bool = True) -> bool:
                 status_code=status.HTTP_501_NOT_IMPLEMENTED,
                 detail=f"DB error, {str(e)}",
             )
-        return info.acknowledged
+        return info is not None
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST, detail="User has not liked this item"
     )
