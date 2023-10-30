@@ -8,14 +8,15 @@
     <div class="container mx-auto flex flex-col md:flex-row items-center my-0 md:my-0">
             <div class="bg-white p-8 rounded-lg shadow-lg h-full w-full">
                 <div class="flex justify-center">
-                    <img class="w-40 h-40 rounded-full object-cover border-4 border-gray-300" alt="Profile picture" src="https://demos.creative-tim.com/notus-js/assets/img/team-2-800x800.jpg">
+                    <img class="w-40 h-40 rounded-full object-cover border-4 border-gray-300" alt="Profile picture" src="https://www.shutterstock.com/shutterstock/photos/149083895/display_1500/stock-vector-male-avatar-profile-picture-vector-149083895.jpg">
                 </div>
                 <div class="mt-6">
-                    <h1 class="text-3xl font-medium text-gray-900 mb-2">Jenna Stones</h1>
-                    <p class="text-gray-500 text-lg mb-2">Solution Manager - Creative Tim Officer</p>
-                    <p class="text-gray-500 text-lg mb-2"><i class="fas fa-map-marker-alt"></i> Los Angeles, California</p>
-                    <p class="text-gray-500 text-lg mb-2"><i class="fas fa-graduation-cap"></i> University of Computer Science</p>
+                    <h1 class="text-3xl font-medium text-gray-900 mb-2">@{{data.user.username}}</h1>
+                    <p class="text-gray-500 text-lg mb-2">@{{data.user.username}}</p>
+                    <p class="text-gray-500 text-lg mb-2"><i class="fas fa-map-marker-alt"></i> {{data.user.email}}</p>
+                    <p class="text-gray-500 text-lg mb-2"><i class="fas fa-graduation-cap"></i>member since {{data.user.date_created}}</p>
                     <p class="text-gray-500 text-base leading-7">An artist of considerable range, Jenna the name taken by Melbourne-raised, Brooklyn-based Nick Murphy writes, performs and records all of his own music, giving it a warm, intimate feel with a solid groove structure. An artist of considerable range.</p>
+                    <a href="#" class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-full mt-4 inline-flex items-center">Edit Profile</a>
                 </div>
             </div>
         </div>
@@ -27,7 +28,7 @@
                     <a href="#" class="text-blue-500 hover:text-blue-700 text-xl mb-2 block">My Posts</a>
                 </div>
                 <div class="bg-white p-8 rounded-lg shadow-lg">
-                    <a href="/me/new" class="text-blue-500 hover:text-blue-700 text-xl mb-2 block">New Post</a>
+                    <a href="/profile/new" class="text-blue-500 hover:text-blue-700 text-xl mb-2 block">New Post</a>
                 </div>
                 <div class="bg-white p-8 rounded-lg shadow-lg">
                     <a href="#" class="text-blue-500 hover:text-blue-700 text-xl mb-2 block">Comments</a>

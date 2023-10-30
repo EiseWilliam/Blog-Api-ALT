@@ -4,10 +4,11 @@ from fastapi.responses import HTMLResponse
 from fastapi import APIRouter, HTTPException, Request, Depends, Response
 from fastapi.routing import APIRoute
 from fastapi.templating import Jinja2Templates
-import httpx
-from app.routers.user import get_user_details
 
-from app.utils.oauth import get_current_user_optional
+
+from ..routers.user import get_user_details, show_profile
+
+from ..utils.oauth import get_current_user, get_current_user_optional
 
 from ..utils.util import render, compile_context
 from .articles import get_all_articles, get_article_use_path, get_full_article
@@ -41,7 +42,8 @@ async def about(request: Request):
 
 @router.get("/profile", response_class=HTMLResponse)
 async def my_profile(request: Request):
-    context = compile_context(request)
+    data = await show_profile(get_current_user_optional(request.cookies.get("access_token"))) # type: ignore
+    context = compile_context(request, data)
     return templates.TemplateResponse("dashboard/me.html", context)
 
 

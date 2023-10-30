@@ -1,7 +1,7 @@
 {% extends "base.html" %} {% block content %}
 
-<div class="flex justify-center">
-    <form class="w-full max-w-lg bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+<div class="flex justify-center w-screen">
+    <form id="article-form" class="w-screen max-w-lg bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 " hx-post="/articles/" hx-headers="Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1M2Y1NTZlNDgwMDMwNGNjNzBkOTI3YyIsImVtYWlsIjoic3VwZXJ1c2VyQGV4YW1wbGUuY29tIiwiZXhwaXJlcyI6IjIwMjMtMTAtMzBUMDc6MjE6NDkuMDg0NjgyIn0.M4QDAd6TTaNKGvDiUcCxtjc8VlxtNvcWtResagkz35E">
         <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
                 Title
@@ -30,7 +30,7 @@
             </div>
             <div class="md:flex md:items-center">
             <div class="md:w-1/3">
-                <button class="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900" type="button">
+                <button id="publish-btn" class="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900" type="button" hx-post="/articles/" hx-headers="Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1M2Y1NTZlNDgwMDMwNGNjNzBkOTI3YyIsImVtYWlsIjoic3VwZXJ1c2VyQGV4YW1wbGUuY29tIiwiZXhwaXJlcyI6IjIwMjMtMTAtMzBUMDc6MjE6NDkuMDg0NjgyIn0.M4QDAd6TTaNKGvDiUcCxtjc8VlxtNvcWtResagkz35E" hx-swap="outerHTML" hx-trigger="click">
                     Publish
                 </button>
             </div>
@@ -38,6 +38,5 @@
         </div>
     </form>
 </div>
-
 
 {% endblock %}
