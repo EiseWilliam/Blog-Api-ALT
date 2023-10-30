@@ -2,6 +2,7 @@ from decouple import config
 
 ACCESS_TOKEN_EXPIRES_IN = 60
 REFRESH_TOKEN_EXPIRES_IN = 20
+URI = str(config("DB_URL"))
 JWT_SECRET_KEY = str(config("JWT_SECRET_KEY"))   
 JWT_REFRESH_SECRET_KEY = str(config("JWT_SECRET_KEY"))
 ALGORITHM = str(config("JWT_ALGORITHM", default="HS256"))
