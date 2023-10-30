@@ -1,6 +1,6 @@
 # Blog FASTAPI
 
-## USER MANAGE APP
+## Blog RestAPI
 Blog API and demo UI built with python/fastAPI, Mongodb and jinja2 templates
 
 ### Getting Started
