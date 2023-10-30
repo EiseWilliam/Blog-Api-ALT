@@ -1,6 +1,6 @@
 # Blog FASTAPI
 
-## Blog RestAPI
+## Blog RestAPI with FastAPI
 Blog API and demo UI built with python/fastAPI, Mongodb and jinja2 templates
 
 ### Getting Started
