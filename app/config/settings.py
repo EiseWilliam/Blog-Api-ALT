@@ -2,7 +2,7 @@ from decouple import config
 
 ACCESS_TOKEN_EXPIRES_IN = 60
 REFRESH_TOKEN_EXPIRES_IN = 20
-URI = config("DB_URL", default= "mongodb+srv://blog-admin:9UTYAjQTVEHtXTrb@cluster0.ckndfam.mongodb.net/?retryWrites=true&w=majority", cast=str)
+URI = config("DB_URL", default = "mongodb://localhost:27017", cast=str)
 JWT_SECRET_KEY = config("JWT_SECRET_KEY", cast=str, default="fdnvlscnv jdsnv kdjnv")   
 JWT_REFRESH_SECRET_KEY = config("JWT_SECRET_KEY", cast=str)
 ALGORITHM = config("JWT_ALGORITHM", default="HS256", cast=str)
