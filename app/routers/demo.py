@@ -39,7 +39,7 @@ async def about(request: Request):
     return templates.TemplateResponse("auth/register.html", context)
 
 
-@router.get("/me", response_class=HTMLResponse)
+@router.get("/profile", response_class=HTMLResponse)
 async def my_profile(request: Request):
     context = compile_context(request)
     return templates.TemplateResponse("dashboard/me.html", context)
@@ -52,13 +52,13 @@ async def read_article(request: Request):
     return templates.TemplateResponse("view/article.html", context)
 
 
-@router.get("/me/new", response_class=HTMLResponse)
+@router.get("/profile/new", response_class=HTMLResponse)
 async def publish_article_page(request: Request):
     context = compile_context(request)
     return templates.TemplateResponse("dashboard/new.html", context)
 
 
-@router.get("/user", response_class=HTMLResponse)
+@router.get("/user/{user_id}", response_class=HTMLResponse)
 async def view_userprofile_page(request: Request, user_id: str):
     data = await get_user_details(user_id)
     context = compile_context(request, data)

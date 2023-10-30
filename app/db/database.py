@@ -6,7 +6,7 @@ from decouple import config
 from ..config.settings import URI
 
   # Set the Stable API version when creating a new client
-client = MongoClient(URI, server_api=ServerApi('1'))
+client = MongoClient(URI, server_api=ServerApi('1')) # type: ignore
 
 def connect_to_db():
     try:
